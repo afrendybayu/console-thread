@@ -1,0 +1,17 @@
+#include "activetagmodel.h"
+
+ActiveTagModel::ActiveTagModel()  {
+
+}
+
+int ActiveTagModel::getActiveTag(QSqlQueryModel *model)    {
+
+    QString str = "SELECT t.id, t.tag, t.periode, t.daq_method, t.start_daq as start, t.source, s.link, w.webid "
+                  "FROM tag_tmms_detail t "
+                  "LEFT JOIN source s ON t.source = s.id "
+                  "LEFT JOIN staging_webapi w ON t.id = w.id "
+                  "WHERE t.status = 1";
+
+    model->setQuery(str);
+    return model->rowCount();
+}
