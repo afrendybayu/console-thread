@@ -3,11 +3,12 @@
 #include <QFile>
 #include <QDateTime>
 #include <QObject>
+#include <QThread>
 
 MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
 {
     mTimerQueue = new QTimer();
-    qDebug() << "masuk constructor MainController";
+    qDebug() << "masuk constructor MainController" << QThread::currentThreadId();
     this->initData();
 
     qDebug("CtrlMainWindows isi mServerConfig: %d", mServerConfig->rowCount());
@@ -16,7 +17,9 @@ MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
 
     this->connect(mTimerQueue, SIGNAL(timeout()), this, SLOT(updateQueue()));
     mTimerQueue->start(2000);
-
+    QString str = QString("\r\n\r\n-------------------------------\r\nmasuk constructor MainController");
+//           .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
+    simpanFile(str);
 }
 
 MainControllerO::~MainControllerO()    {
@@ -42,7 +45,10 @@ void MainControllerO::resume()  {
 
 void MainControllerO::updateQueue()   {
     qDebug() << "masuk updateQueue";
-//    logMessage( "Masuk ke fungsi updateQueue", QtServiceBase::Success );
+    QString str = QString("masuk updateQueue %1 %2")
+            .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"),
+                 QString::number(QDateTime::currentMSecsSinceEpoch()));
+    simpanFile(str);
 }
 
 
