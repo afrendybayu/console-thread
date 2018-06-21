@@ -32,8 +32,14 @@ private slots:
     void updateQueue();
 
 private:
+    void init();
     void initData();
     void simpanFile(QString isi);
+    void firstQueueDAQ();
+    void firstQueueFormula();
+    int  doCrawling(int id, stJobQueue job);
+    int  doCalculating(int id, stJobQueue job);
+
 
     bool disabled;
 

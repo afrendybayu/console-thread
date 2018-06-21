@@ -5,9 +5,9 @@
 #include "qtservice.h"
 #include "controller/maincontrollero.h"
 
-//#define PAKAI_OBJEK
+#define PAKAI_OBJEK
 //#define PAKAI_THREAD_LANGSUNG
-#define PAKAI_SERVICE
+//#define PAKAI_SERVICE
 
 
 class DaqService : public QtService<QCoreApplication>  {
