@@ -30,6 +30,7 @@ public slots:
 
 private slots:
     void updateQueue();
+    void exeQueue();
 
 private:
     void init();

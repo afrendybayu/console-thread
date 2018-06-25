@@ -14,6 +14,8 @@ MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
 MainControllerO::~MainControllerO()    {
     mTimerQueue = NULL;
     delete mTimerQueue;
+    mTimerExe = NULL;
+    delete mTimerExe;
 
     mServerConfig = NULL;
     mActiveTag = NULL;
@@ -34,7 +36,9 @@ void MainControllerO::resume()  {
 
 void MainControllerO::init()    {
     mTimerQueue = new QTimer();
-    qDebug() << "masuk constructor MainController" << QThread::currentThreadId();
+    mTimerExe = new QTimer();
+    qDebug() << "masuk constructor MainController" << QThread::currentThreadId()
+             << ", idealThreadCount: " << QThread::idealThreadCount();
     this->initData();
 
     qDebug("CtrlMainWindows isi mServerConfig: %d", mServerConfig->rowCount());
@@ -42,7 +46,9 @@ void MainControllerO::init()    {
     qDebug("CtrlMainWindows isi mActiveForDetail: %d", mActiveFormula->rowCount());
 
     this->connect(mTimerQueue, SIGNAL(timeout()), this, SLOT(updateQueue()));
-    mTimerQueue->start(2000);
+    this->connect(mTimerExe, SIGNAL(timeout()), this, SLOT(exeQueue()));
+    mTimerQueue->start(4000);
+    mTimerExe->start(1000);
     QString str = QString("\r\n\r\n-------------------------------\r\nmasuk constructor MainController");
 //           .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
     simpanFile(str);
@@ -58,8 +64,8 @@ void MainControllerO::updateQueue()   {
     simpanFile(str);
 
     int epoch = (int) QDateTime::currentSecsSinceEpoch();
-    qDebug() << "updateQueue" << "mTmmsTagDetail->rowCount()" << jobQueue.count()
-             << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz") <<", now:"<< epoch;
+    qDebug() << "updateQueue" << "mActiveTag->rowCount()" << mActiveTag->rowCount() << "njobQueue: " << jobQueue.count()
+             << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz") <<", now:"<< epoch <<  QThread::currentThreadId();
     for (int i=0; i<mActiveTag->rowCount(); i++) {
         QSqlRecord rec = mActiveTag->record(i);
         stJobQueue tmp;
@@ -68,7 +74,7 @@ void MainControllerO::updateQueue()   {
             if (tmp.tag == rec.value("tag"))    {
                 while (jobQueue[j].nextnextJob < QDateTime::currentSecsSinceEpoch())    {
                     jobQueue[j].status = JOB_FREE;
-                    qDebug() << "  GANTI JJJJADDDDUULLLLL: " << tmp.tag << (QDateTime::currentSecsSinceEpoch()-tmp.nextJob) << tmp.lastJob << tmp.nextJob << tmp.status;
+//                    qDebug() << "  GANTI JJJJADDDDUULLLLL: " << tmp.tag << (QDateTime::currentSecsSinceEpoch()-tmp.nextJob) << tmp.lastJob << tmp.nextJob << tmp.status;
                     jobQueue[j].nextnextJob += jobQueue[j].periode;
                 }
             }
@@ -77,6 +83,12 @@ void MainControllerO::updateQueue()   {
     }
 }
 
+void MainControllerO::exeQueue()    {
+    int epoch = (int) QDateTime::currentSecsSinceEpoch();
+    qDebug() << "exeQueue" << "jobQueue count: " << jobQueue.count()
+             << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz") <<", now:"<< epoch <<  QThread::currentThreadId();
+
+}
 
 void MainControllerO::initData() {
     sqlite.openConnDB();
@@ -104,9 +116,9 @@ void MainControllerO::simpanFile(QString isi)   {
 }
 
 void MainControllerO::firstQueueDAQ()   {
-//    int epoch = (int) QDateTime::currentSecsSinceEpoch();
-//    qDebug() << "fitstQueue" << "mTmmsTagDetail->rowCount()" << jobQueue.count()
-//             << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz") <<", now:"<< epoch;
+    int epoch = (int) QDateTime::currentSecsSinceEpoch();
+    qDebug() << "fitstQueue" << "mTmmsTagDetail->rowCount()" << jobQueue.count()
+             << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz") <<", now:"<< epoch;
 
 //    mMutex->lock();
 //    for (int i=0; i<mTmmsTagDetail->rowCount(); i++)    {
