@@ -3,7 +3,6 @@
 #include <QFile>
 #include <QDateTime>
 #include <QObject>
-#include <QThread>
 #include <QtSql>
 
 #ifdef   Q_OS_UNIX
@@ -15,7 +14,50 @@
 
 MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
 {
+    qDebug() << "masuk thread MainControllerO : "<< QThread::currentThreadId();
     init();
+
+//    connect(pi, &PiWebApiCrawler::finished, pi, &QObject::deleteLater, Qt::DirectConnection);
+//    connect(th, &QThread::finished, pi, &QObject::deleteLater);
+//    connect(th, SIGNAL(finished()), th, SLOT(deleteLater()));
+
+/*
+    connect(th, &QThread::started, pi, &PiWebApiCrawler::slotTesting);
+    connect(pi, SIGNAL(resultReady(QString)), this, SLOT(slotFinish(QString)));
+    connect(pi, SIGNAL(finished()), th, SLOT(quit()));          // mandatory
+    connect(pi, SIGNAL(finished()), pi, SLOT(deleteLater()));   // require th::quit. Jika mandiri, optional(?)
+//*/
+
+//    pi.moveToThread(&th);
+//    th.start();
+
+//    pi->moveToThread(th);
+//    th->start();
+//    th->start();
+
+}
+
+void MainControllerO::slotGetResultPiCrawler(QString resp)  {
+    qDebug() << "+++ masuk MainControllerO::slotGetResultPiCrawler, parsing Data" << resp;
+//    while (!th->isFinished()) {
+//        QThread::sleep(1);
+//        qDebug() << "MASIH jalan";
+//    }
+//    while(th->isRunning());
+//        qDebug() << "sudah mati";
+//    else
+//        qDebug() << "masih jalan";
+//    delete th;
+//    delete pi;
+}
+
+void MainControllerO::slotThFinish()    {
+     qDebug() << "+++ masuk MainControllerO::slotThFinish";
+     th = NULL;
+     pi = NULL;
+
+     delete th;
+     delete pi;
 }
 
 MainControllerO::~MainControllerO()    {
@@ -42,6 +84,9 @@ void MainControllerO::resume()  {
 }
 
 void MainControllerO::init()    {
+
+//    th = new QThread;
+//    pi = new PiWebApiCrawler;
     mTimerQueue = new QTimer();
     mTimerExe = new QTimer();
     qDebug() << "masuk constructor MainController" << QThread::currentThreadId()
@@ -54,8 +99,8 @@ void MainControllerO::init()    {
 
     this->connect(mTimerQueue, SIGNAL(timeout()), this, SLOT(updateQueue()));
     this->connect(mTimerExe, SIGNAL(timeout()), this, SLOT(exeQueue()));
-    mTimerQueue->start(4000);
-    mTimerExe->start(1000);
+    mTimerQueue->start(5000);
+//    mTimerExe->start(1000);
     QString str = QString("\r\n\r\n-------------------------------\r\nmasuk constructor MainController");
 //           .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
     simpanFile(str);
@@ -64,7 +109,9 @@ void MainControllerO::init()    {
 
 void MainControllerO::updateQueue()   {
     if (disabled) return;
-//    qDebug() << "masuk updateQueue";
+
+
+//    qDebug() << "masuk updateQueue" << QThread::currentThreadId();  //<<"/";// << th->isRunning();
     QString str = QString("masuk updateQueue %1 %2")
             .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"),
                  QString::number(QDateTime::currentMSecsSinceEpoch()));
@@ -81,8 +128,10 @@ void MainControllerO::updateQueue()   {
             if (tmp.tag == rec.value("tag"))    {
                 while (jobQueue[j].nextnextJob < QDateTime::currentSecsSinceEpoch())    {
                     jobQueue[j].status = JOB_FREE;
-//                    qDebug() << "  GANTI JJJJADDDDUULLLLL: " << tmp.tag << (QDateTime::currentSecsSinceEpoch()-tmp.nextJob) << tmp.lastJob << tmp.nextJob << tmp.status;
+                    qDebug() << "  GANTI JJJJADDDDUULLLLL: " << tmp.tag << (QDateTime::currentSecsSinceEpoch()-tmp.nextJob) << tmp.lastJob << tmp.nextJob << tmp.status;
                     jobQueue[j].nextnextJob += jobQueue[j].periode;
+//                    this->doCrawling(j, jobQueue[j]);
+                    sedot();
                 }
             }
             j++;
@@ -92,8 +141,8 @@ void MainControllerO::updateQueue()   {
 
 void MainControllerO::exeQueue()    {
     int epoch = (int) QDateTime::currentSecsSinceEpoch();
-    qDebug() << "exeQueue" << "jobQueue count: " << jobQueue.count()
-             << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz") <<", now:"<< epoch <<  QThread::currentThreadId();
+//    qDebug() << "exeQueue" << "jobQueue count: " << jobQueue.count()
+//             << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz") <<", now:"<< epoch <<  QThread::currentThreadId();
 
 }
 
@@ -122,9 +171,24 @@ void MainControllerO::simpanFile(QString isi)   {
     file.close();
 }
 
+void MainControllerO::sedot() {
+    th = new QThread;
+    pi = new PiWebApiCrawler("Passing Data sedot");
+
+    connect(th, &QThread::started, pi, &PiWebApiCrawler::slotTesting);
+    connect(pi, SIGNAL(resultReady(QString)), this, SLOT(slotGetResultPiCrawler(QString)));
+    connect(pi, SIGNAL(finished()), th, SLOT(quit()));          // mandatory
+    connect(pi, SIGNAL(finished()), pi, SLOT(deleteLater()));   // require th::quit. Jika mandiri, optional(?)
+    connect(th, SIGNAL(finished()), this, SLOT(slotThFinish()));
+
+    pi->moveToThread(th);
+    th->start();
+
+}
+
 void MainControllerO::firstQueueDAQ()   {
     int epoch = (int) QDateTime::currentSecsSinceEpoch();
-    qDebug() << "fitstQueue" << "mTmmsTagDetail->rowCount()" << jobQueue.count()
+    qDebug() << "firstQueue" << "mTmmsTagDetail->rowCount()" << jobQueue.count()
              << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz") <<", now:"<< epoch;
 
 //    mMutex->lock();
@@ -216,8 +280,6 @@ int  MainControllerO::doCrawling(int id, stJobQueue job)   {
 //            jobQueue[i].nextnextJob = jobQueue[i].lastJob+wkt;
     qDebug() << ">>>>>>>>>>>>>>> doCrawling execute tag:" << job.tag << QDateTime::currentSecsSinceEpoch() << job.nextJob << job.periode;
     jobQueue[id].status = JOB_EXECUTING;
-
-//    pi.requestWebApi("http://localhost/piwebapi.html");
 
     jobQueue[id].lastJob = jobQueue[id].nextJob;
     jobQueue[id].nextJob = jobQueue[id].lastJob + job.periode;

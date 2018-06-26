@@ -2,6 +2,7 @@
 #define MAINCONTROLLERO_H
 
 #include <QTimer>
+#include <QThread>
 #include <QSqlRelationalTableModel>
 
 #include <utils/sqldb.h>
@@ -12,6 +13,7 @@
 #include <model/activetagmodel.h>
 #include <model/activeformulamodel.h>
 #include <model/piwebapicrawler.h>
+
 
 class MainControllerO : public QObject
 {
@@ -31,6 +33,8 @@ public slots:
 private slots:
     void updateQueue();
     void exeQueue();
+    void slotThFinish();
+    void slotGetResultPiCrawler(QString resp);
 
 private:
     void init();
@@ -41,7 +45,10 @@ private:
     int  doCrawling(int id, stJobQueue job);
     int  doCalculating(int id, stJobQueue job);
 
+    void sedot();
 
+    QThread* th;
+    PiWebApiCrawler* pi;
     bool disabled;
 
     QTimer *mTimerQueue;

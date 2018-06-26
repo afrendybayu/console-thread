@@ -7,7 +7,7 @@ CONFIG -= app_bundle
 
 #TARGET = app
 win32: TARGET = ../../../koding/exe/DAQScadaMITs
-unix:  TARGET = app
+unix:  TARGET = DAQScadaMITs
 
 DEFINES += CONSOLE
 

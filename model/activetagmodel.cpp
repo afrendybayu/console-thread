@@ -1,4 +1,5 @@
 #include "activetagmodel.h"
+#include <QDebug>
 
 ActiveTagModel::ActiveTagModel()  {
 
@@ -11,6 +12,7 @@ int ActiveTagModel::getActiveTag(QSqlQueryModel *model)    {
                   "LEFT JOIN source s ON t.source = s.id "
                   "LEFT JOIN staging_webapi w ON t.id = w.id "
                   "WHERE t.status = 1";
+    qDebug() << str;
 
     model->setQuery(str);
     return model->rowCount();
