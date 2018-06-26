@@ -21,6 +21,10 @@
 
 #include "defines.hpp"
 
+#ifdef  Q_OS_UNIX
+#include <signal.h>
+#endif
+
 int    myKill(pid_t pid, int signal)
 {
     if (pid == 0) {
@@ -52,7 +56,8 @@ int    myKill(pid_t pid, int signal)
 
     return (errno == 128 ? 0 : errno);
 #else
-    return kill(pid, signal);
+//    return kill(pid, signal);
+    return 0;       // fungsi kill error: ‘kill’ was not declared in this scope
 #endif
 }
 

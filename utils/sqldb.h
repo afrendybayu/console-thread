@@ -4,8 +4,13 @@
 #include <QSqlDatabase>
 #include <QSqlDriver>
 
-//#define SQLITE_FILE "./picassa.db"
+#ifdef   Q_OS_UNIX
+#define SQLITE_FILE "picassa.db"
+#else   // Q_OS_WINDOWS
 #define SQLITE_FILE "C:/Users/afrendy/Documents/koding/exe/picassa.db"
+#endif
+
+//#define SQLITE_FILE "./picassa.db"
 
 class SqlDb
 {

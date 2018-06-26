@@ -6,6 +6,13 @@
 #include <QThread>
 #include <QtSql>
 
+#ifdef   Q_OS_UNIX
+#define LOG_FILE "log.txt"
+#else   // Q_OS_WINDOWS
+#define LOG_FILE "C:/Users/afrendy/Documents/koding/ext/log.txt"
+#endif
+
+
 MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
 {
     init();
