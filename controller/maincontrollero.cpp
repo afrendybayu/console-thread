@@ -24,27 +24,29 @@ void tesDataRecorded()  {
     while (!in.atEnd()) {
         str += in.readLine();
     }
-    qDebug() << str;
+//    qDebug() << str;
     QByteArray ba = str.toUtf8();
 
-    PiWebApiCrawler p("tes");
+    PiWebApiCrawler p("");
     QList<stRecordedDataPiWebAPi> data;
     int last;
-
     int a = p.parsingRecordedDataPiWebApi(1000, ba, data, last);
-    qDebug() << "a: " << a;
+
+    /*
     for (int i=0; i<a; i++) {
         qDebug() <<"id:"<< data[i].id <<", value:"<< data[i].value
                 <<", waktu:"<< data[i].dt.toString("yyyy-MM-dd HH:mm:ss.zzz") << data[i].epoch;
     }
-
-    return;
+    //*/
+    p.simpanRecordedDataWebApi(data);
 }
 
 MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
 {
+
     tesDataRecorded();
     return;
+
     qDebug() << "masuk thread MainControllerO : "<< QThread::currentThreadId();
     init();
 
@@ -69,9 +71,16 @@ MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
 
 }
 
-void MainControllerO::slotGetResultPiCrawler(QString resp)  {
+//void MainControllerO::slotGetResultPiCrawler(QString resp)  {
+void MainControllerO::slotGetResultPiCrawler(QByteArray resp)  {
+
     qDebug() << "+++ masuk MainControllerO::slotGetResultPiCrawler, parsing Data" << resp;
-//    while (!th->isFinished()) {
+    PiWebApiCrawler px("");
+    int id, last;
+    QList<stRecordedDataPiWebAPi> data;
+
+    px.parsingRecordedDataPiWebApi(id, resp, data, last);
+    //    while (!th->isFinished()) {
 //        QThread::sleep(1);
 //        qDebug() << "MASIH jalan";
 //    }
@@ -235,7 +244,8 @@ void MainControllerO::sedot(stJobQueue job) {
     pi = new PiWebApiCrawler(job.tag);
 
     connect(th, &QThread::started, pi, &PiWebApiCrawler::reqWebApiDataRecorded);
-    connect(pi, SIGNAL(resultReady(QString)), this, SLOT(slotGetResultPiCrawler(QString)));
+//    connect(pi, SIGNAL(resultReady(QString)), this, SLOT(slotGetResultPiCrawler(QString)));
+    connect(pi, SIGNAL(resultReady(QByteArray)), this, SLOT(slotGetResultPiCrawler(QByteArray)));
     connect(pi, SIGNAL(finished()), th, SLOT(quit()));          // mandatory
     connect(pi, SIGNAL(finished()), pi, SLOT(deleteLater()));   // require th::quit. Jika mandiri, optional(?)
     connect(th, SIGNAL(finished()), this, SLOT(slotThFinish()));

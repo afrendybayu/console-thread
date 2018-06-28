@@ -2,6 +2,8 @@
 #include <QDebug>
 #include <QDateTime>
 #include <QThread>
+#include <QtSql>
+#include <QSqlQuery>
 #include <QtNetwork>
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
@@ -72,7 +74,7 @@ void PiWebApiCrawler::reqWebApiDataRecorded() {
 //*
     QThread::sleep(5);
 
-    emit resultReady(mArg);
+    emit resultReady(mArg.toUtf8());
     emit finished();
 //*/
 }
@@ -84,12 +86,16 @@ void PiWebApiCrawler::replyFinishedRecorded(QNetworkReply *reply)    {
     QByteArray ba = reply->readAll();
     reply->deleteLater();
 
-    qDebug() << ba;
-    QJsonObject json;
-//    json.begin()
-//    ba.toUpper()
-//    emit resultReady(QString(reply->readAll()));
-    emit resultReady(mArg);
+/*
+    // kalau penyimpanan langsung dari model. *Tapi belum dapat id titik ukur
+    int id, last;
+    QList<stRecordedDataPiWebAPi> data;
+    parsingRecordedDataPiWebApi(id, ba, data, last);
+    simpanRecordedDataWebApi(data);
+//*/
+
+    emit resultReady(ba);
+//    emit resultReady(mArg);
     emit finished();
 }
 
@@ -97,7 +103,8 @@ void PiWebApiCrawler::slotTesting() {
     qDebug() << ">>>>>> masuk piwebapicrawler : " << QThread::currentThreadId() << ", arg: " << mArg;
     QThread::sleep(5);
     qDebug() << "<<<<<< selesai piwebapicrawler : " << QThread::currentThreadId();
-    emit resultReady(mArg);
+//    emit resultReady(mArg);
+    emit resultReady(QString("tesSlot").toUtf8());
     emit finished();
 }
 
@@ -116,26 +123,77 @@ int PiWebApiCrawler::parsingRecordedDataPiWebApi(int id, QByteArray str, QList<s
         qDebug() << "ERROR parsing atau tidak ada data !!";
         return 0;
     }
-    QString t;
-//    QDateTime dt;
 
+    QString t;
     stRecordedDataPiWebAPi tmp;
     for (int i=0; i<items.count(); i++) {
         tmp.id    = id;
         tmp.value = (float) items[i].toObject().value("Value").toDouble();
-        t = items[i].toObject().value("Timestamp").toString().left(23);
+        t = items[i].toObject().value("Timestamp").toString().left(23); // jumlah character harus SAMA persis
         tmp.dt    = QDateTime::fromString(t,"yyyy-MM-ddTHH:mm:ss.zzz");
         tmp.epoch = (int) tmp.dt.toSecsSinceEpoch();
-        //  "2018-05-04T06:07:46.6890106Z"
-//        dt = QDateTime::fromString(t,"yyyy-MM-ddThh:mm:ss.zzz");
-//        qDebug() << t << dt << dt.toString()  << dt.toString("yyyy-MM-dd");
         data.append(tmp);
     }
 
-    qDebug() << "Finish:" << data.count();
+//    qDebug() << "Finish:" << data.count();
     return items.count();
 }
 
+int PiWebApiCrawler::simpanRecordedDataWebApi(QList<stRecordedDataPiWebAPi> data) {
+
+    // bagi query menjadi tiap kelipatan 20 insert data.
+    int nInsert = 20;
+    if (data.count()<=0)    return -1;
+    QString s = "";
+    QStringList lquery;
+
+    int jml = (int) ((data.count()%nInsert)?((data.count()/nInsert)+1):(data.count()/nInsert));
+    int urut = 0, list = 0;
+
+    for (int i=0; i<data.count(); i++)   {
+        qDebug() << "id:"<< data[i].id<<", value: "<<data[i].value;
+        if (urut==0)    {
+            if (list)   {
+                lquery.append(s);
+            }
+            s = QString("INSERT INTO data (id, value, epoch) VALUES ");
+            s.append(QString("('%1','%2','%3')")
+                     .arg(QString::number(data[i].id),QString::number(data[i].value),QString::number(data[i].epoch)));
+            list++;
+        }
+        else {
+            s.append(QString(",('%1','%2','%3')")
+                    .arg(QString::number(data[i].id),QString::number(data[i].value),QString::number(data[i].epoch)));
+        }
+        urut = (urut+1)%nInsert;
+    }
+    lquery.append(s);
+
+    QSqlQuery query;
+    int loop = 0, tersimpan = 0;
+
+//*  dimatikan dulu. Nunggu model.
+//    if (model->database().transaction())    {
+        for (int i=0; i<list; i++)  {
+            qDebug() << (i+1) << ":"<< lquery[i];
+//            if (!query.exec(lquery[i])) qDebug() << query.lastError();
+//            else tersimpan++;
+        }
+
+/*
+        if (!model->database().commit()) {
+            qDebug() << "gagal transaksi & commit !! Lanjutkan proses berikutnya : " << query.lastError();
+            if (model->database().rollback())   {
+                qDebug() << "database rollback";
+            }
+            if (loop>5) {       // gagal transaksi berturut-turut
+                return -1;
+            }
+        }
+    }
+//*/
+    return tersimpan;
+}
 
 
 

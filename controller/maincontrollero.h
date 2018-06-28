@@ -34,7 +34,7 @@ private slots:
     void updateQueue();
     void exeQueue();
     void slotThFinish();
-    void slotGetResultPiCrawler(QString resp);
+    void slotGetResultPiCrawler(QByteArray resp);
 
 private:
     void init();

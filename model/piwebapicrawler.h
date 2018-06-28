@@ -26,9 +26,12 @@ public:
     void init(QString url);
     void slotDebug();
     int parsingRecordedDataPiWebApi(int id, QByteArray str, QList<stRecordedDataPiWebAPi> &data, int &lastdata);
+    int simpanRecordedDataWebApi(QList<stRecordedDataPiWebAPi> data);
+
 
 signals:
-    void resultReady(QString str);
+//    void resultReady(QString str);
+    void resultReady(QByteArray ba);
     void finished();
 
 public slots:
