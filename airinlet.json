@@ -1,0 +1,70 @@
+{
+  "Links": {},
+  "Items": [
+    {
+      "Timestamp": "2018-05-04T06:07:46.6890106Z",
+      "Value": 80.8,
+      "UnitsAbbreviation": "",
+      "Good": true,
+      "Questionable": false,
+      "Substituted": false
+    },
+    {
+      "Timestamp": "2018-05-04T06:07:54.6920013Z",
+      "Value": 80.9,
+      "UnitsAbbreviation": "",
+      "Good": true,
+      "Questionable": false,
+      "Substituted": false
+    },
+    {
+      "Timestamp": "2018-05-04T06:07:59.7260131Z",
+      "Value": 81.0,
+      "UnitsAbbreviation": "",
+      "Good": true,
+      "Questionable": false,
+      "Substituted": false
+    },
+    {
+      "Timestamp": "2018-05-04T06:08:00.7000122Z",
+      "Value": 80.9,
+      "UnitsAbbreviation": "",
+      "Good": true,
+      "Questionable": false,
+      "Substituted": false
+    },
+    {
+      "Timestamp": "2018-05-04T06:08:01.701004Z",
+      "Value": 81.0,
+      "UnitsAbbreviation": "",
+      "Good": true,
+      "Questionable": false,
+      "Substituted": false
+    },
+    {
+      "Timestamp": "2018-05-04T06:08:06.6950073Z",
+      "Value": 81.1,
+      "UnitsAbbreviation": "",
+      "Good": true,
+      "Questionable": false,
+      "Substituted": false
+    },
+    {
+      "Timestamp": "2018-05-04T06:08:21.7130126Z",
+      "Value": 81.2000046,
+      "UnitsAbbreviation": "",
+      "Good": true,
+      "Questionable": false,
+      "Substituted": false
+    },
+    {
+      "Timestamp": "2018-05-04T06:08:29.7250061Z",
+      "Value": 81.3,
+      "UnitsAbbreviation": "",
+      "Good": true,
+      "Questionable": false,
+      "Substituted": false
+    }
+  ],
+  "UnitsAbbreviation": ""
+}

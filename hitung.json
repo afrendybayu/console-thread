@@ -1,0 +1,51 @@
+"formula": {
+	"tag": [31112, 31113, 31114],
+	"parameter": [{
+		"name": "p1",
+		"type": "query",
+		"value": "SELECT * FROM tag_tmms_detail WHERE (id_tag = 31111) AND epochtime BETWEEN %1 AND %2"
+	}],
+	"code": "
+				var data = [{'id': 11234, 'value': 555.55, 'epoch': 1528250081},
+							{'id': 11234, 'value': 111.11, 'epoch': 1528250082},
+							{'id': 11234, 'value': 111.11, 'epoch': 1528250084},
+							{'id': 11234, 'value': 111.11, 'epoch': 1528250085},
+							{'id': 11234, 'value': 777.77, 'epoch': 1528250086},
+							{'id': 11234, 'value': 222.22, 'epoch': 1528250083}];
+
+				if (!data) return;
+				if (data.length<=0)	return;
+
+				function mini(d1, d2) {
+					return (d1.value>d2.value)?d2:d1;
+				}
+
+				function maxi(d1, d2) {
+					return (d1.value>d2.value)?d1:d2;
+				}
+
+				var i=0, min=0, max=0, avg=0, tot=0;
+				var id = data[0].id;
+
+				for (i=0; i<data.length; i++)	{
+					tot += data[i].value;
+					if (i>0)	{
+						min = mini(min, data[i]);
+						max = maxi(max, data[i]);
+					}
+					else {
+						min = data[0];
+						max = data[0];
+					}
+					if ((i+1)==data.length)	{
+						avg = data[i];
+						avg.value = (tot/data.length);
+					}
+				}
+
+				var ret = new Array(min, max, avg);
+				return ret;
+			"
+}
+
+
