@@ -2,6 +2,7 @@
 #define STRUCT_H
 
 #include <QString>
+#include <QDateTime>
 
 //#define JOB_DAQ         1
 //#define JOB_FORMULA     2
@@ -34,6 +35,13 @@ struct stJobQueue   {
     int source;
     int periode;
     bool selalu = false;        // continue ato one shoot execute
+};
+
+struct stRecordedDataPiWebAPi    {
+    int id;
+    QDateTime dt;
+    int epoch;
+    float value;
 };
 
 

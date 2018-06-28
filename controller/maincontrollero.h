@@ -45,11 +45,12 @@ private:
     int  doCrawling(int id, stJobQueue job);
     int  doCalculating(int id, stJobQueue job);
 
-    void sedot();
+    void sedot(stJobQueue job);
 
     QThread* th;
     PiWebApiCrawler* pi;
     bool disabled;
+    int threadCount;
 
     QTimer *mTimerQueue;
     QTimer *mTimerExe;
