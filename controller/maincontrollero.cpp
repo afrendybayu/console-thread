@@ -5,6 +5,9 @@
 #include <QObject>
 #include <QtSql>
 
+#include <QScriptEngine>
+
+
 #ifdef   Q_OS_UNIX
 #define LOG_FILE "log.txt"
 #else   // Q_OS_WINDOWS
@@ -24,7 +27,7 @@ void tesDataRecorded()  {
     while (!in.atEnd()) {
         str += in.readLine();
     }
-//    qDebug() << str;
+    qDebug() << str;
     QByteArray ba = str.toUtf8();
 
     PiWebApiCrawler p("");
@@ -41,10 +44,26 @@ void tesDataRecorded()  {
     p.simpanRecordedDataWebApi(data);
 }
 
+void tesScriptEngine()  {
+    QFile file("./hitung.json");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+
+    QTextStream in(&file);
+    QString str = "";
+    while (!in.atEnd()) {
+        str += in.readLine();
+    }
+
+    ActiveFormulaModel f;
+    f.prosesFormulaScript(str, 11, 22);
+}
+
 MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
 {
 
-    tesDataRecorded();
+//    tesDataRecorded();
+    tesScriptEngine();
     return;
 
     qDebug() << "masuk thread MainControllerO : "<< QThread::currentThreadId();

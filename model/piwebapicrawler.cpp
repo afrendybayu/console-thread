@@ -151,7 +151,7 @@ int PiWebApiCrawler::simpanRecordedDataWebApi(QList<stRecordedDataPiWebAPi> data
     int urut = 0, list = 0;
 
     for (int i=0; i<data.count(); i++)   {
-        qDebug() << "id:"<< data[i].id<<", value: "<<data[i].value;
+//        qDebug() << "id:"<< data[i].id<<", value: "<<data[i].value;
         if (urut==0)    {
             if (list)   {
                 lquery.append(s);
@@ -175,7 +175,7 @@ int PiWebApiCrawler::simpanRecordedDataWebApi(QList<stRecordedDataPiWebAPi> data
 //*  dimatikan dulu. Nunggu model.
 //    if (model->database().transaction())    {
         for (int i=0; i<list; i++)  {
-            qDebug() << (i+1) << ":"<< lquery[i];
+//            qDebug() << (i+1) << ":"<< lquery[i];
 //            if (!query.exec(lquery[i])) qDebug() << query.lastError();
 //            else tersimpan++;
         }
