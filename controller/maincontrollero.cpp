@@ -356,7 +356,7 @@ void MainControllerO::firstQueueFormula()    {
     for (int i=0; i<mActiveFormula->rowCount(); i++)    {
         QSqlRecord rec = mActiveFormula->record(i);
 //        qDebug() << rec.value("content").toString();
-        modelActiveFormula.validateFormulaScript(rec.value("content").toString());
+        qDebug() << modelActiveFormula.validateFormulaScript(rec.value("content").toString());
     }
 
 }

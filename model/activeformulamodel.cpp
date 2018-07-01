@@ -41,13 +41,15 @@ QString ActiveFormulaModel::validateFormulaScript(QString kode) {
     int n=0, m=0;
     QString resCode = kode;
     QStringList komentar;
-    int jmlComment = resCode.count(QLatin1String("\/\/"));
-    qDebug() << "jmlComment: " << jmlComment;
+//
 
-    for (int i=0; i<jmlComment; i++) {
-        if (n = kode.indexOf(QRegExp("\/\/"), n)) {
+    int jmlComment = resCode.count(QLatin1String("\/\/"));
+//    qDebug() << kode << endl << "jmlComment: " << jmlComment;
+    if (jmlComment>0)   {
+        for (int i=0; i<jmlComment; i++) {
+            n = kode.indexOf(QRegExp("\/\/"), n);
             m = kode.indexOf(QRegExp("\n"), n);
-//            qDebug() << "/ ada di" << n << ", \n di "<< m;
+//            qDebug() << "/ ada di" << n << ", \\n di "<< m;
             QString sub = kode.mid(n, (m-n+1));
 //            qDebug() << sub;
             komentar.append(sub);
@@ -57,15 +59,16 @@ QString ActiveFormulaModel::validateFormulaScript(QString kode) {
             n++;
         }
     }
+//*
     for (int i=0; i<jmlComment; i++)    {
-        qDebug() << komentar[i];
+//        qDebug() << komentar[i];
         resCode.replace(komentar[i],"");
     }
 
     resCode.replace("\t","");
     resCode.replace("\n","");
-
-    qDebug() << resCode;
+//*/
+//    qDebug() << resCode;
     return resCode;
 }
 
