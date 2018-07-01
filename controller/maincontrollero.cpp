@@ -45,6 +45,7 @@ void tesDataRecorded()  {
 }
 
 void tesScriptEngine()  {
+/*
     QFile file("./hitung.json");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
@@ -54,20 +55,28 @@ void tesScriptEngine()  {
     while (!in.atEnd()) {
         str += in.readLine();
     }
+    qDebug() << str;
+//*/
+
+
+
 
     ActiveFormulaModel f;
-    f.prosesFormulaScript(str, 11, 22);
+    QStringList args;
+
+//    f.getCurrentFormula(tag, formula, args);
+//    f.prosesFormulaScript(str, args);
 }
 
 MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
 {
 
 //    tesDataRecorded();
-    tesScriptEngine();
-    return;
+//    return;
 
     qDebug() << "masuk thread MainControllerO : "<< QThread::currentThreadId();
     init();
+//    tesScriptEngine();
 
 //    connect(pi, &PiWebApiCrawler::finished, pi, &QObject::deleteLater, Qt::DirectConnection);
 //    connect(th, &QThread::finished, pi, &QObject::deleteLater);
@@ -171,7 +180,8 @@ void MainControllerO::init()    {
     QString str = QString("\r\n\r\n-------------------------------\r\nmasuk constructor MainController");
 //           .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
     simpanFile(str);
-    firstQueueDAQ();
+//    firstQueueDAQ();
+    firstQueueFormula();
 }
 
 void MainControllerO::updateQueue()   {
@@ -339,31 +349,16 @@ void MainControllerO::firstQueueDAQ()   {
 }
 
 void MainControllerO::firstQueueFormula()    {
-//    int epoch = (int) QDateTime::currentSecsSinceEpoch();
-//    qDebug() << "firstQueueFormula" << "mTmmsTagDetail->rowCount()" << jobQueue.count()
-//             << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz") <<", now:"<< epoch;
+    int epoch = (int) QDateTime::currentSecsSinceEpoch();
+    qDebug() << "firstQueueFormula" << mActiveFormula->rowCount()
+             << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz") <<", now:"<< epoch;
 
-    for (int i=0; i<mActiveTag->rowCount(); i++) {
-        QSqlRecord rec = mActiveTag->record(i);
-
-        stJobQueue tmp;
-        tmp.id  = rec.value("id").toInt();
-        tmp.tag = rec.value("tag").toString();
-    //            QString start = rec.value("start").toString();
-    //            qDebug() <<tmp.tag<< ", wkt: "<<wkt << tmp.lastJob << tmp.nextJob;
-    //            tmp.nextJob = QDateTime::currentSecsSinceEpoch() + wkt;     // jika waktu mulai tidak stated
-        tmp.nextJob = utils.awalTime(rec.value("start").toString(), rec.value("periode").toString());
-        tmp.nextnextJob = tmp.nextJob;
-    //            tmp.lastJob = QDateTime::currentSecsSinceEpoch();
-        tmp.lastJob = 0;
-        tmp.jobType = JOB_DAQ;
-        tmp.status  = JOB_WAITING;
-        tmp.source  = rec.value("source").toInt();
-    //            tmp.periode = wkt;
-        tmp.periode = utils.getPeriode(rec.value("periode").toString());
-        tmp.selalu = true;
-        jobQueue.append(tmp);
+    for (int i=0; i<mActiveFormula->rowCount(); i++)    {
+        QSqlRecord rec = mActiveFormula->record(i);
+//        qDebug() << rec.value("content").toString();
+        modelActiveFormula.validateFormulaScript(rec.value("content").toString());
     }
+
 }
 
 int  MainControllerO::doCrawling(int id, stJobQueue job)   {

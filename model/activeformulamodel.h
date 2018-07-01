@@ -10,7 +10,10 @@ class ActiveFormulaModel : public QSqlQueryModel
 public:
     ActiveFormulaModel();
     int getActiveFormula(QSqlQueryModel *model);
-    int prosesFormulaScript(QString kode, int epochAwal, int epochAkhir);
+    int getCurrentFormula(QString tag, QString kode, QStringList args);
+    int prosesFormulaScript(QString kode, QStringList args);
+    int parsingParamFormula(QJsonObject o, QStringList args);
+    QString validateFormulaScript(QString kode);
 };
 
 #endif // ACTIVEFORMULAMODEL_H
