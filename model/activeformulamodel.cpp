@@ -42,7 +42,6 @@ QString ActiveFormulaModel::validateFormulaScript(QString kode) {
     QString resCode = kode;
     QStringList komentar;
 //
-
     int jmlComment = resCode.count(QLatin1String("\/\/"));
 //    qDebug() << kode << endl << "jmlComment: " << jmlComment;
     if (jmlComment>0)   {

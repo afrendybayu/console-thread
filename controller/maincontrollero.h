@@ -52,6 +52,8 @@ private:
     bool disabled;
     int threadCount;
 
+    QNetworkAccessManager* pmanager;
+
     QTimer *mTimerQueue;
     QTimer *mTimerExe;
 

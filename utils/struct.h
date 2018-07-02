@@ -35,6 +35,8 @@ struct stJobQueue   {
     int source;
     int periode;
     bool selalu = false;        // continue ato one shoot execute
+    QString webId;
+    QString kode;
 };
 
 struct stRecordedDataPiWebAPi    {
