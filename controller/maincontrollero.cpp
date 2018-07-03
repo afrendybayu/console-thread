@@ -268,6 +268,11 @@ void MainControllerO::initData() {
 
         sqlite.closeConnDB();
     }
+    QStringList list = QSqlDatabase::connectionNames();
+    for(int i = 0; i < list.count(); ++i) {
+        QSqlDatabase::removeDatabase(list[i]);
+    }
+
 //    qDebug() << "sebelum cek koneksi ada di initData";
 
 }

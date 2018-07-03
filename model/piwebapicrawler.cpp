@@ -68,7 +68,7 @@ void PiWebApiCrawler::reqWebApiDataRecordedSingle(stJobQueue job) {
     QNetworkRequest request;
 //    qDebug() << " 9 -----------------------------";
     QString urls = URL_WEBAPI_DATA_RECORDED + job.webId
-            + "/recorded?countMax=100000&startTime="+awal
+            + "/recorded.html?countMax=100000&startTime="+awal
             + "&selectedFields=Timestamp;Value";   //+"&endTime="+akhir;
     qDebug() << "url = " << urls;
     QUrl url =  QUrl::fromEncoded(urls.toLocal8Bit().data());
@@ -214,9 +214,10 @@ int PiWebApiCrawler::parsingRecordedDataPiWebApi(int id, QByteArray str, QList<s
     for (int i=0; i<items.count(); i++) {
         tmp.id    = id;
         tmp.value = (float) items[i].toObject().value("Value").toDouble();
-        t = items[i].toObject().value("Timestamp").toString().left(23); // jumlah character harus SAMA persis
-        tmp.dt    = QDateTime::fromString(t,"yyyy-MM-ddTHH:mm:ss.zzz");
+        t = items[i].toObject().value("Timestamp").toString().left(19); // jumlah character harus SAMA persis
+        tmp.dt    = QDateTime::fromString(t,"yyyy-MM-ddTHH:mm:ss");
         tmp.epoch = (int) tmp.dt.toSecsSinceEpoch();
+        qDebug() << t << tmp.dt  << tmp.dt.toString("yyyy-MM-dd HH:mm:ss") << tmp.epoch;
         data.append(tmp);
     }
 
@@ -228,20 +229,20 @@ int PiWebApiCrawler::simpanRecordedDataWebApi(QList<stRecordedDataPiWebAPi> data
     if (data.count()<=0)    return -1;
 
     // bagi query menjadi tiap kelipatan 20 insert data.
-    int nInsert = 20;
+    int nInsert = 50;
     QString s = "";
     QStringList lquery;
 
-    int jml = (int) ((data.count()%nInsert)?((data.count()/nInsert)+1):(data.count()/nInsert));
+//    int jml = (int) ((data.count()%nInsert)?((data.count()/nInsert)+1):(data.count()/nInsert));
     int urut = 0, list = 0;
 
     for (int i=0; i<data.count(); i++)   {
-//        qDebug() << "id:"<< data[i].id<<", value: "<<data[i].value;
+        qDebug() << "id:"<< data[i].id<<", value: "<<data[i].value << ",waktu: " << data[i].epoch;
         if (urut==0)    {
             if (list)   {
                 lquery.append(s);
             }
-            s = QString("INSERT INTO data (id, value, epoch) VALUES ");
+            s = QString("REPLACE INTO data (id, value, epochtime) VALUES ");
             s.append(QString("('%1','%2','%3')")
                      .arg(QString::number(data[i].id),QString::number(data[i].value),QString::number(data[i].epoch)));
             list++;
@@ -254,29 +255,30 @@ int PiWebApiCrawler::simpanRecordedDataWebApi(QList<stRecordedDataPiWebAPi> data
     }
     lquery.append(s);
 
-    QSqlQuery query;
-    int loop = 0, tersimpan = 0;
+    int tersimpan = 0;
+    {
+        SqlDb sqlite;
+        QSqlQueryModel model;       // cara sesat !!!
 
-//*  dimatikan dulu. Nunggu model.
-//    if (model->database().transaction())    {
+        sqlite.openConnDB();
+        QString qs = "INSERT INTO data (id, epochtime, value) VALUES ('1234','1234567','123.456')";
+
+//*
         for (int i=0; i<list; i++)  {
 //            qDebug() << (i+1) << ":"<< lquery[i];
-//            if (!query.exec(lquery[i])) qDebug() << query.lastError();
-//            else tersimpan++;
+//            if (!query.exec(lquery[i]))
+//                qDebug() << query.lastError();
+            model.setQuery(lquery[i]);
+            tersimpan++;
         }
-
-/*
-        if (!model->database().commit()) {
-            qDebug() << "gagal transaksi & commit !! Lanjutkan proses berikutnya : " << query.lastError();
-            if (model->database().rollback())   {
-                qDebug() << "database rollback";
-            }
-            if (loop>5) {       // gagal transaksi berturut-turut
-                return -1;
-            }
-        }
-    }
 //*/
+         sqlite.closeConnDB();
+    }
+    QStringList conList = QSqlDatabase::connectionNames();
+    for(int i = 0; i < conList.count(); ++i) {
+        QSqlDatabase::removeDatabase(conList[i]);
+    }
+
     return tersimpan;
 }
 
