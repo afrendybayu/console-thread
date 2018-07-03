@@ -8,6 +8,7 @@ SqlDb::SqlDb()  {
 
 }
 
+
 void SqlDb::openConnDB()  {
     openConnectionSqlite(SQLITE_FILE);
 }
@@ -31,12 +32,14 @@ void SqlDb::simpanLog(QString isi)  {
 }
 
 bool SqlDb::openConnectionSqlite(const QString& path) {
-    sqlite = QSqlDatabase::addDatabase("QSQLITE","qt_sql_default_connection"); // nama koneksi default
+//    sqlite = QSqlDatabase::addDatabase("QSQLITE","qt_sql_default_connection"); // nama koneksi default
+//    sqlite = QSqlDatabase::addDatabase("QSQLITE");  // ,"koneksiSqlite"
+    sqlite = QSqlDatabase::addDatabase("QSQLITE");  //
     sqlite.setDatabaseName(path);
     bool st = false;
 
     if (sqlite.open()) {
-        qDebug() << "open";
+        qDebug() << "SqlDb open koneksi sqlite";
     }
 
     if (!sqlite.open()) {
@@ -48,22 +51,34 @@ bool SqlDb::openConnectionSqlite(const QString& path) {
         st = true;
     }
 
-    qDebug() << "open ?: " << sqlite.open();
+//    qDebug() << "open ?: " << sqlite.open();
     return st;
 }
 
 void SqlDb::closeConnectionSqlite() {
-    qDebug() << "KOneksi SQLite";
+    qDebug() << "Siap tutup KOneksi SQLite";
 //    if (sqlite.open()) {            // gagal tidak dikenali
 //        qDebug() << "open";
 //    }
 
-    qDebug() << "mau tutup open ?: " << sqlite.open();
+//    qDebug() << "mau tutup open ?: " << sqlite.open();
 
 
     if (sqlite.open()) {
-        QSqlDatabase::removeDatabase("QSQLITE");
+//        QString connection;
+//        connection = sqlite.connectionName();
+//        qDebug() << "koneksi db:" << connection;
+//        QSqlDatabase::removeDatabase("QSQLITE");
         sqlite.close();
+//        sqlite.QSqlDatabase();
+//        sqlite.removeDatabase("qt_sql_default_connection");
+//        sqlite.removeDatabase(connection);
+//        QStringList list = QSqlDatabase::connectionNames();
+//        for(int i = 0; i < list.count(); ++i) {
+//            qDebug() << "koneksi: " << list[i];
+//            QSqlDatabase::removeDatabase(list[i]);
+//        }
+
         qDebug() << "tutup KOneksi SQLite berhasil !!";
     }
 }
@@ -74,4 +89,9 @@ void SqlDb::closeConnDB() {
 
 SqlDb::~SqlDb()  {
     qDebug() << "ini fungsi destructive ~SqlDb";
+//    QStringList list = QSqlDatabase::connectionNames();
+//    for(int i = 0; i < list.count(); ++i) {
+//        qDebug() << "koneksi: " << list[i];
+//        QSqlDatabase::removeDatabase(list[i]);
+//    }
 }

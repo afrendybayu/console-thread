@@ -12,7 +12,8 @@ class QNetworkReply;
 class QAuthenticator;
 QT_END_NAMESPACE
 
-#define URL_WEBAPI_DATA_RECORDED "https://jsonplaceholder.typicode.com/comments?postId=1"
+//#define URL_WEBAPI_DATA_RECORDED "https://jsonplaceholder.typicode.com/comments?postId=1"
+#define URL_WEBAPI_DATA_RECORDED "http://localhost/piwebapi/"
 
 class PiWebApiCrawler : public QObject
 {
@@ -25,9 +26,10 @@ public:
     ~PiWebApiCrawler();
     void init(QString url);
     void slotDebug();
-    int parsingRecordedDataPiWebApi(int id, QByteArray str, QList<stRecordedDataPiWebAPi> &data, int &lastdata);
+    int parsingRecordedDataPiWebApi(int id, QByteArray str, QList<stRecordedDataPiWebAPi> &data);
     int simpanRecordedDataWebApi(QList<stRecordedDataPiWebAPi> data);
-
+    void reqWebApiDataRecordedSingle(stJobQueue job);
+    QString getLastDataTime(QString tag);
 
 signals:
 //    void resultReady(QString str);
@@ -41,6 +43,7 @@ public slots:
 
 
 private:
+    stJobQueue mJob;
     QNetworkAccessManager manager;
     QNetworkAccessManager* pmanager;
 

@@ -128,3 +128,7 @@ int ActiveFormulaModel::prosesFormulaScript(QString kode, QStringList args)  {
 //*/
 
 }
+
+int ActiveFormulaModel::exeFormulaScript(stJobQueue job)  {
+
+}

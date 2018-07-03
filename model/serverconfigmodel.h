@@ -1,14 +1,16 @@
 #ifndef SERVERCONFIGMODEL_H
 #define SERVERCONFIGMODEL_H
 
-#include <QSqlRelationalTableModel>
+//#include <QSqlRelationalTableModel>
 //#include <QMessageBox>
+#include <QSqlQueryModel>
 
-class ServerConfigModel : public QSqlRelationalTableModel   {
+//class ServerConfigModel : public QSqlRelationalTableModel   {
+class ServerConfigModel : public QSqlQueryModel   {
 //    Q_OBJECT
 public:
     ServerConfigModel();
-    int initData(QSqlRelationalTableModel* model);
+    int initData(QSqlQueryModel* model);
 //    void initData(int a);
 //    void init();
 

@@ -5,6 +5,8 @@
 
 #include <QSqlQueryModel>
 
+#include <utils/struct.h>
+
 class ActiveFormulaModel : public QSqlQueryModel
 {
 public:
@@ -14,6 +16,7 @@ public:
     int prosesFormulaScript(QString kode, QStringList args);
     int parsingParamFormula(QJsonObject o, QStringList args);
     QString validateFormulaScript(QString kode);
+    int exeFormulaScript(stJobQueue job);
 };
 
 #endif // ACTIVEFORMULAMODEL_H

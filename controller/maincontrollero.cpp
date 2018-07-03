@@ -7,6 +7,8 @@
 
 #include <QScriptEngine>
 
+#define PAKAI_SINGLE_THREAD
+//#define PAKAI_MULTI_THREAD
 
 #ifdef   Q_OS_UNIX
 #define LOG_FILE "log.txt"
@@ -17,7 +19,7 @@
 void tesDataRecorded()  {
     qDebug() << "bisakah ??";
 
-
+    /*
     QFile file("./airinlet.json");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
@@ -33,15 +35,9 @@ void tesDataRecorded()  {
     PiWebApiCrawler p("");
     QList<stRecordedDataPiWebAPi> data;
     int last;
-    int a = p.parsingRecordedDataPiWebApi(1000, ba, data, last);
-
-    /*
-    for (int i=0; i<a; i++) {
-        qDebug() <<"id:"<< data[i].id <<", value:"<< data[i].value
-                <<", waktu:"<< data[i].dt.toString("yyyy-MM-dd HH:mm:ss.zzz") << data[i].epoch;
-    }
-    //*/
+    int a = p.parsingRecordedDataPiWebApi(1000, ba, data);
     p.simpanRecordedDataWebApi(data);
+    //*/
 }
 
 void tesScriptEngine()  {
@@ -78,22 +74,10 @@ MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
     init();
 //    tesScriptEngine();
 
-//    connect(pi, &PiWebApiCrawler::finished, pi, &QObject::deleteLater, Qt::DirectConnection);
-//    connect(th, &QThread::finished, pi, &QObject::deleteLater);
-//    connect(th, SIGNAL(finished()), th, SLOT(deleteLater()));
 
-/*
-    connect(th, &QThread::started, pi, &PiWebApiCrawler::slotTesting);
-    connect(pi, SIGNAL(resultReady(QString)), this, SLOT(slotFinish(QString)));
-    connect(pi, SIGNAL(finished()), th, SLOT(quit()));          // mandatory
-    connect(pi, SIGNAL(finished()), pi, SLOT(deleteLater()));   // require th::quit. Jika mandiri, optional(?)
-//*/
-
-//    pi.moveToThread(&th);
-//    th.start();
-
-//    pi->moveToThread(th);
-//    th->start();
+#ifdef PAKAI_SINGLE_THREAD
+    connect(pi, &PiWebApiCrawler::finished, this, &MainControllerO::slotThFinish);
+#endif
 
 
 
@@ -107,7 +91,7 @@ void MainControllerO::slotGetResultPiCrawler(QByteArray resp)  {
     int id, last;
     QList<stRecordedDataPiWebAPi> data;
 
-    px.parsingRecordedDataPiWebApi(id, resp, data, last);
+//    px.parsingRecordedDataPiWebApi(id, resp, data);
     //    while (!th->isFinished()) {
 //        QThread::sleep(1);
 //        qDebug() << "MASIH jalan";
@@ -121,7 +105,7 @@ void MainControllerO::slotGetResultPiCrawler(QByteArray resp)  {
 }
 
 void MainControllerO::slotThFinish()    {
-
+#ifdef PAKAI_MULTI_THREAD
     qDebug() << "+++ masuk MainControllerO::slotThFinish" << th->currentThreadId() << th->isRunning()
              << "thread: " << threadCount;
     pi->slotDebug();
@@ -132,6 +116,9 @@ void MainControllerO::slotThFinish()    {
     delete pi;
     threadCount = (threadCount<=0)?0:(threadCount-1);
     qDebug() << "sisa thread: " << threadCount;
+#endif
+//    sqlite.closeConnDB();
+    ajaxDone = true;
 }
 
 MainControllerO::~MainControllerO()    {
@@ -147,6 +134,9 @@ MainControllerO::~MainControllerO()    {
     delete mServerConfig;
     delete mActiveTag;
     delete mActiveFormula;
+
+    pi = NULL;
+    delete pi;
 }
 
 void MainControllerO::pause()    {
@@ -158,16 +148,21 @@ void MainControllerO::resume()  {
 }
 
 void MainControllerO::init()    {
-
     threadCount = 0;
     mTimerQueue = new QTimer();
     mTimerExe = new QTimer();
-
+    ajaxDone = true;
+    pi = new PiWebApiCrawler("");
 
 
     qDebug() << "masuk constructor MainController" << QThread::currentThreadId()
              << ", idealThreadCount: " << QThread::idealThreadCount();
-    this->initData();
+
+    initData();
+
+    qDebug() << "-----------------";
+
+//    return;
 
     qDebug("CtrlMainWindows isi mServerConfig: %d", mServerConfig->rowCount());
     qDebug("CtrlMainWindows isi mActiveTagDetail: %d", mActiveTag->rowCount());
@@ -175,18 +170,24 @@ void MainControllerO::init()    {
 
     this->connect(mTimerQueue, SIGNAL(timeout()), this, SLOT(updateQueue()));
     this->connect(mTimerExe, SIGNAL(timeout()), this, SLOT(exeQueue()));
-    mTimerQueue->start(5000);
 //    mTimerExe->start(1000);
-    QString str = QString("\r\n\r\n-------------------------------\r\nmasuk constructor MainController");
+//    QString str = QString("\r\n\r\n-------------------------------\r\nmasuk constructor MainController");
 //           .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
-    simpanFile(str);
+//    simpanFile(str);
     firstQueueDAQ();
-    firstQueueFormula();
+//    firstQueueFormula();
+/*
+    for (int i=0; i<mServerConfig->rowCount(); i++)     {
+        QSqlRecord rec;
+        rec = mServerConfig->record(i);
+        qDebug() << rec;
+    }
+//*/
+    mTimerQueue->start(2000);
 }
 
 void MainControllerO::updateQueue()   {
     if (disabled) return;
-
 
 //    qDebug() << "masuk updateQueue" << QThread::currentThreadId();  //<<"/";// << th->isRunning();
     QString str = QString("masuk updateQueue %1 %2")
@@ -212,7 +213,10 @@ void MainControllerO::updateQueue()   {
 
             }
             if (jobQueue[j].jobType == JOB_DAQ)
-                sedot(jobQueue[j]);
+#ifdef PAKAI_SINGLE_THREAD
+                if (ajaxDone)
+#endif
+                    sedot(jobQueue[j]);
             if (jobQueue[j].jobType == JOB_FORMULA)
                 doCalculating(j, jobQueue[j]);
         }
@@ -247,17 +251,25 @@ void MainControllerO::exeQueue()    {
 }
 
 void MainControllerO::initData() {
-    sqlite.openConnDB();
+    // biar tidak ada warning masalah duplicate connection name
+    // QSqlDatabasePrivate::addDatabase: duplicate connection name 'qt_sql_default_connection', old connection removed
+    // ------- mulai
+    {
+        SqlDb sqlite;
+        sqlite.openConnDB();
 
-    mServerConfig = new QSqlRelationalTableModel();
-    mActiveTag = new QSqlQueryModel();
-    mActiveFormula = new QSqlQueryModel();
+        mServerConfig = new QSqlQueryModel();
+        mActiveTag = new QSqlQueryModel();
+        mActiveFormula = new QSqlQueryModel();
 
-    modelServerConfig.initData(mServerConfig);
-    modelActiveTag.getActiveTag(mActiveTag);
-    modelActiveFormula.getActiveFormula(mActiveFormula);
+        modelServerConfig.initData(mServerConfig);
+        modelActiveTag.getActiveTag(mActiveTag);
+        modelActiveFormula.getActiveFormula(mActiveFormula);
 
-    sqlite.closeConnDB();
+        sqlite.closeConnDB();
+    }
+//    qDebug() << "sebelum cek koneksi ada di initData";
+
 }
 
 void MainControllerO::simpanFile(QString isi)   {
@@ -272,6 +284,7 @@ void MainControllerO::simpanFile(QString isi)   {
 }
 
 void MainControllerO::sedot(stJobQueue job) {
+#ifdef PAKAI_MULTI_THREAD
     th = new QThread;
     pi = new PiWebApiCrawler(job.tag);
 
@@ -288,6 +301,13 @@ void MainControllerO::sedot(stJobQueue job) {
 
     threadCount++;
 //    QMetaObject::invokeMethod(pi,"startWorking");
+#endif
+
+#ifdef PAKAI_SINGLE_THREAD
+    qDebug() << "------- Pakai SINGLE THREAD -------";
+    ajaxDone = false;
+    pi->reqWebApiDataRecordedSingle(job);
+#endif
 }
 
 void MainControllerO::firstQueueDAQ()   {
@@ -379,7 +399,6 @@ void MainControllerO::firstQueueFormula()    {
         tmp.nextJob = utils.awalTime(rec.value("start_daq").toString(), rec.value("periode").toString());
         jobQueue.append(tmp);
     }
-
 }
 
 int  MainControllerO::doCrawling(int id, stJobQueue job)   {
@@ -406,7 +425,7 @@ int  MainControllerO::doCalculating(int id, stJobQueue job)   {
     qDebug() << "formula: " << job.kode;
 
 //    for (int j=0; j<MAX_CRAWLING_LOOP; j++)  {
-
+//
 //    }
 
 

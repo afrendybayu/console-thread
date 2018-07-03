@@ -3,7 +3,7 @@
 
 #include <QTimer>
 #include <QThread>
-#include <QSqlRelationalTableModel>
+#include <QSqlQueryModel>
 
 #include <utils/sqldb.h>
 #include <utils/struct.h>
@@ -51,13 +51,15 @@ private:
     PiWebApiCrawler* pi;
     bool disabled;
     int threadCount;
+    bool ajaxDone;
+//    PiWebApiCrawler pis;
 
     QNetworkAccessManager* pmanager;
 
     QTimer *mTimerQueue;
     QTimer *mTimerExe;
 
-    SqlDb sqlite;
+//    SqlDb sqlite;
     UtilsUtils utils;
     QList<stJobQueue> jobQueue;
 
@@ -65,7 +67,7 @@ private:
     ActiveTagModel modelActiveTag;
     ActiveFormulaModel modelActiveFormula;
 
-    QSqlRelationalTableModel *mServerConfig;
+    QSqlQueryModel *mServerConfig;
     QSqlQueryModel *mActiveTag;
     QSqlQueryModel *mActiveFormula;
 
