@@ -66,7 +66,10 @@ void tesScriptEngine()  {
 
 MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
 {
-
+    QString m = "2018-07-04 00:00:00";
+    QDateTime UTC(QDateTime::fromString(m,"yyyy-MM-dd HH:mm:ss"));
+    UTC.setTimeSpec(Qt::UTC);
+    qDebug() << m << UTC << QDateTime::fromString(m,"yyyy-MM-dd HH:mm:ss").toUTC();
 //    tesDataRecorded();
 //    return;
 

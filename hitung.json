@@ -7,15 +7,22 @@
 	},{
 		"name": "p2",
 		"type": "query",
-		"value": "SELECT * FROM tag_tmms_detail WHERE (id_tag = 31112) AND epochtime BETWEEN %1 AND %2"
+		"value": "SELECT * FROM tag_tmms_detail WHERE (id_tag = 31115) AND epochtime BETWEEN %1 AND %2"
 	}],
 	"code": "
-				var data = [{'id': 11234, 'value': 555.55, 'epoch': 1528250081},
-							{'id': 11234, 'value': 111.11, 'epoch': 1528250082},
-							{'id': 11234, 'value': 111.11, 'epoch': 1528250084},
-							{'id': 11234, 'value': 111.11, 'epoch': 1528250085},
-							{'id': 11234, 'value': 777.77, 'epoch': 1528250086},
-							{'id': 11234, 'value': 222.22, 'epoch': 1528250083}];
+				var data1 = [{'id': 31111, 'value': 555.55, 'epoch': 1528250081},
+							{'id': 31111, 'value': 111.11, 'epoch': 1528250082},
+							{'id': 31111, 'value': 111.11, 'epoch': 1528250083},
+							{'id': 31111, 'value': 333.33, 'epoch': 1528250084},
+							{'id': 31111, 'value': 777.77, 'epoch': 1528250085},
+							{'id': 31111, 'value': 222.22, 'epoch': 1528250086}];
+							
+				var data2 = [{'id': 31115, 'value': 55.55, 'epoch': 1528250081},
+							{'id': 31115, 'value': 86.11, 'epoch': 1528250082},
+							{'id': 31115, 'value': 90.11, 'epoch': 1528250083},
+							{'id': 31115, 'value': 91.11, 'epoch': 1528250084},
+							{'id': 31115, 'value': 90.77, 'epoch': 1528250085},
+							{'id': 31115, 'value': 89.22, 'epoch': 1528250086}];
 
 				if (!data) return;
 				if (data.length<=0)	return;

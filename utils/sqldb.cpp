@@ -38,15 +38,15 @@ bool SqlDb::openConnectionSqlite(const QString& path) {
     sqlite.setDatabaseName(path);
     bool st = false;
 
-    if (sqlite.open()) {
-        qDebug() << "SqlDb open koneksi sqlite";
-    }
+//    if (sqlite.open()) {
+//        qDebug() << "SqlDb open koneksi sqlite";
+//    }
 
     if (!sqlite.open()) {
         qDebug() << "KOneksi SQLite gagal !!";
     }
     else {
-        qDebug() << "Koneksi SQLite berhasil";
+//        qDebug() << "Koneksi SQLite berhasil";
 //        logMessage( "koneksi berhasil", 1 );    // QtServiceBase::Error
         st = true;
     }
@@ -56,7 +56,7 @@ bool SqlDb::openConnectionSqlite(const QString& path) {
 }
 
 void SqlDb::closeConnectionSqlite() {
-    qDebug() << "Siap tutup KOneksi SQLite";
+//    qDebug() << "Siap tutup KOneksi SQLite";
 //    if (sqlite.open()) {            // gagal tidak dikenali
 //        qDebug() << "open";
 //    }
@@ -79,7 +79,7 @@ void SqlDb::closeConnectionSqlite() {
 //            QSqlDatabase::removeDatabase(list[i]);
 //        }
 
-        qDebug() << "tutup KOneksi SQLite berhasil !!";
+//        qDebug() << "tutup KOneksi SQLite berhasil !!";
     }
 }
 
@@ -88,7 +88,7 @@ void SqlDb::closeConnDB() {
 }
 
 SqlDb::~SqlDb()  {
-    qDebug() << "ini fungsi destructive ~SqlDb";
+//    qDebug() << "ini fungsi destructive ~SqlDb";
 //    QStringList list = QSqlDatabase::connectionNames();
 //    for(int i = 0; i < list.count(); ++i) {
 //        qDebug() << "koneksi: " << list[i];

@@ -68,8 +68,8 @@ void PiWebApiCrawler::reqWebApiDataRecordedSingle(stJobQueue job) {
     QNetworkRequest request;
 //    qDebug() << " 9 -----------------------------";
     QString urls = URL_WEBAPI_DATA_RECORDED + job.webId
-            + "/recorded.html?countMax=100000&startTime="+awal
-            + "&selectedFields=Timestamp;Value";   //+"&endTime="+akhir;
+            + "/recorded.html?countMax=20000&startTime="+awal
+            + "&selectedFields=Items.Timestamp;Items.Value";   //+"&endTime="+akhir;
     qDebug() << "url = " << urls;
     QUrl url =  QUrl::fromEncoded(urls.toLocal8Bit().data());
 //    qDebug() << " 9 -----------------------------";
@@ -130,7 +130,7 @@ void PiWebApiCrawler::replyFinishedRecorded(QNetworkReply *reply)    {
     QByteArray ba = reply->readAll();
     reply->deleteLater();
 
-    qDebug() << ba;
+//    qDebug() << ba;
 //*
     // kalau penyimpanan langsung dari model. *Tapi belum dapat id titik ukur
 //    int last;
@@ -215,9 +215,12 @@ int PiWebApiCrawler::parsingRecordedDataPiWebApi(int id, QByteArray str, QList<s
         tmp.id    = id;
         tmp.value = (float) items[i].toObject().value("Value").toDouble();
         t = items[i].toObject().value("Timestamp").toString().left(19); // jumlah character harus SAMA persis
-        tmp.dt    = QDateTime::fromString(t,"yyyy-MM-ddTHH:mm:ss");
+        QDateTime UTC(QDateTime::fromString(t,"yyyy-MM-ddTHH:mm:ss"));
+        UTC.setTimeSpec(Qt::UTC);
+        //tmp.dt    = QDateTime::fromString(t,"yyyy-MM-ddTHH:mm:ss").toUTC();
+        tmp.dt = UTC;
         tmp.epoch = (int) tmp.dt.toSecsSinceEpoch();
-        qDebug() << t << tmp.dt  << tmp.dt.toString("yyyy-MM-dd HH:mm:ss") << tmp.epoch;
+//        qDebug() << t << tmp.dt  << tmp.dt.toString("yyyy-MM-dd HH:mm:ss") << tmp.epoch;
         data.append(tmp);
     }
 
@@ -237,7 +240,7 @@ int PiWebApiCrawler::simpanRecordedDataWebApi(QList<stRecordedDataPiWebAPi> data
     int urut = 0, list = 0;
 
     for (int i=0; i<data.count(); i++)   {
-        qDebug() << "id:"<< data[i].id<<", value: "<<data[i].value << ",waktu: " << data[i].epoch;
+//        qDebug() << "id:"<< data[i].id<<", value: "<<data[i].value << ",waktu: " << data[i].epoch;
         if (urut==0)    {
             if (list)   {
                 lquery.append(s);
