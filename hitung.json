@@ -1,6 +1,6 @@
 "formula": {
 	"tag": [31112, 31113, 31114],
-	"parameter": [{
+	"pre": [{
 		"name": "p1",
 		"type": "query",
 		"value": "SELECT * FROM tag_tmms_detail WHERE (id_tag = 31111) AND epochtime BETWEEN %1 AND %2"

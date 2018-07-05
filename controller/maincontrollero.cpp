@@ -41,8 +41,8 @@ void tesDataRecorded()  {
 }
 
 void tesScriptEngine()  {
-/*
-    QFile file("./hitung.json");
+//*
+    QFile file("./hitung2.json");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
 
@@ -61,7 +61,7 @@ void tesScriptEngine()  {
     QStringList args;
 
 //    f.getCurrentFormula(tag, formula, args);
-//    f.prosesFormulaScript(str, args);
+    f.prosesFormulaScript(str, args);
 }
 
 MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
@@ -71,11 +71,11 @@ MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
     UTC.setTimeSpec(Qt::UTC);
     qDebug() << m << UTC << QDateTime::fromString(m,"yyyy-MM-dd HH:mm:ss").toUTC();
 //    tesDataRecorded();
+//    tesScriptEngine();
 //    return;
 
     qDebug() << "masuk thread MainControllerO : "<< QThread::currentThreadId();
     init();
-//    tesScriptEngine();
 
 
 #ifdef PAKAI_SINGLE_THREAD
@@ -178,7 +178,7 @@ void MainControllerO::init()    {
 //           .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
 //    simpanFile(str);
     firstQueueDAQ();
-//    firstQueueFormula();
+    firstQueueFormula();
 /*
     for (int i=0; i<mServerConfig->rowCount(); i++)     {
         QSqlRecord rec;
@@ -199,7 +199,7 @@ void MainControllerO::updateQueue()   {
     simpanFile(str);
 
 //    int epoch = (int) QDateTime::currentSecsSinceEpoch();
-    qDebug() << "updateQueue" << "njobQueue: " << jobQueue.count() << ", Thread: " << threadCount;
+//    qDebug() << "updateQueue" << "njobQueue: " << jobQueue.count() << ", Thread: " << threadCount;
 //             << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz") <<", now:"<< epoch <<  QThread::currentThreadId();
 //           "mActiveTag->rowCount()" << mActiveTag->rowCount()
 
@@ -207,14 +207,17 @@ void MainControllerO::updateQueue()   {
     stJobQueue tmp;
     foreach (tmp, jobQueue) {
 //        if (tmp.tag == rec.value("tag"))    {
+//        qDebug() << "j: "<<j<<", updateQueue nextnextJob:"<< jobQueue[j].nextnextJob<<", now:"<< QString::number(QDateTime::currentMSecsSinceEpoch())<<", periode:"<< jobQueue[j].periode;
         if (jobQueue[j].nextnextJob < QDateTime::currentSecsSinceEpoch()) {
+//            qDebug() << "next: "<<jobQueue[j].nextnextJob<<", current:"<< QDateTime::currentSecsSinceEpoch();
             while (jobQueue[j].nextnextJob < QDateTime::currentSecsSinceEpoch())    {
                 jobQueue[j].status = JOB_FREE;
-//                qDebug() << "  GANTI JJJJADDDDUULLLLL: " << tmp.tag << (QDateTime::currentSecsSinceEpoch()-tmp.nextJob) << tmp.lastJob << tmp.nextJob << tmp.status;
+//                qDebug() << "  GANTI JJJJADDDDUULLLLL: " << tmp.tag << (QDateTime::currentSecsSinceEpoch()-tmp.nextJob) << tmp.lastJob << tmp.nextJob << tmp.status << "periode: " << jobQueue[j].periode;
                 jobQueue[j].nextnextJob += jobQueue[j].periode;
 //                    this->doCrawling(j, jobQueue[j]);
-
+//                qDebug() << "next: "<<jobQueue[j].nextnextJob<<", current:"<< QDateTime::currentSecsSinceEpoch();
             }
+//            qDebug() << "next: "<<jobQueue[j].nextnextJob<<", current:"<< QDateTime::currentSecsSinceEpoch();
             if (jobQueue[j].jobType == JOB_DAQ)
 #ifdef PAKAI_SINGLE_THREAD
                 if (ajaxDone)
@@ -393,7 +396,7 @@ void MainControllerO::firstQueueFormula()    {
     QString formula;
     for (int i=0; i<mActiveFormula->rowCount(); i++)    {
         QSqlRecord rec = mActiveFormula->record(i);
-        qDebug() << rec;
+//        qDebug() << rec;
 //        qDebug() << rec.value("content").toString();
         formula = modelActiveFormula.validateFormulaScript(rec.value("content").toString());
         qDebug() << formula;
@@ -405,6 +408,9 @@ void MainControllerO::firstQueueFormula()    {
         tmp.selalu = true;
         tmp.kode = formula;
         tmp.nextJob = utils.awalTime(rec.value("start_daq").toString(), rec.value("periode").toString());
+        tmp.nextnextJob = tmp.nextJob;
+        tmp.periode = utils.getPeriode(rec.value("periode").toString());
+        qDebug() << ">>>>>> nextJob firstQUeueForm: " << tmp.nextnextJob;
         jobQueue.append(tmp);
     }
 }
@@ -429,13 +435,19 @@ int  MainControllerO::doCalculating(int id, stJobQueue job)   {
     jobQueue[id].status = JOB_EXECUTING;
     jobQueue[id].lastJob = jobQueue[id].nextJob;
     jobQueue[id].nextJob = jobQueue[id].lastJob + job.periode;
+//    jobQueue[id].nextnextJob =
 
-    qDebug() << "formula: " << job.kode;
+//    qDebug() << "formula: " << job.kode;
 
 //    for (int j=0; j<MAX_CRAWLING_LOOP; j++)  {
 //
 //    }
 
+    ActiveFormulaModel f;
+    QStringList args;
+
+//    f.getCurrentFormula(tag, formula, args);
+    f.prosesFormulaScript(job.kode, args);
 
 
     jobQueue[id].status = JOB_DONE;

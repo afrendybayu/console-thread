@@ -4,6 +4,7 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <utils/sqldb.h>
 
 ActiveFormulaModel::ActiveFormulaModel()    {
 
@@ -21,7 +22,7 @@ int ActiveFormulaModel::getActiveFormula(QSqlQueryModel *model) {
 
 //ActiveFormulaModel::
 
-int getCurrentFormula(QString tag, QString kode, QStringList args)  {
+int getCurrentFormula(stJobQueue job, QStringList args)  {
 
 }
 
@@ -77,24 +78,40 @@ int ActiveFormulaModel::prosesFormulaScript(QString kode, QStringList args)  {
     str.append(" }");
     str.replace("\t","");
 
-//    qDebug() << str;
+    qDebug() << str;
 
     QJsonDocument JsonDoc = QJsonDocument::fromJson(str.toUtf8());
     QJsonObject o = JsonDoc.object();
     QJsonObject f = o.value("formula").toObject();
     QJsonArray  t = f.value("tag").toArray();
-    QJsonArray  p = f.value("parameter").toArray();
+//    QJsonArray pr = (f.value("pre").isArray())?f.value("pre").toArray():f.value("pre").toObject();
+//    QJsonArray ps = (f.value("post").isArray())?f.value("post").toArray():f.value("post").toObject();
+
+    QJsonArray pr = f.value("pre").toArray();
+    QJsonObject ps = f.value("post").toObject();
+//    qDebug() << f.value("post").isArray() << f.value("post").toObject() << ps;
+
 
 //    QString     c = "var val = function() { " + f.value("code").toString() + "}";
 
-    qDebug() << p;
-    for (int i=0; i<p.count(); i++) {
+//    qDebug() << f;
+//    qDebug() << t;
+//    qDebug() << pr;
+//    qDebug() << ps;
+    for (int i=0; i<pr.count(); i++) {
 //        qDebug() << p[i].toObject().value("value").toString();
-        parsingParamFormula(p[i].toObject(), args);
+        parsingParamFormula(pr[i].toObject(), args);
     }
+
+//    for (int i=0; i<ps.count(); i++) {
+////        qDebug() << p[i].toObject().value("value").toString();
+//        parsingParamFormula(ps[i].toObject(), args);
+//    }
 
     QString     c = "(function() { " + f.value("code").toString() + "})";
 //*
+//    return -1;
+
     QScriptEngine eng;
     QScriptValueList arg;
     QScriptValue val = eng.evaluate(c);
