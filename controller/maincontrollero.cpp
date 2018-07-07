@@ -59,9 +59,10 @@ void tesScriptEngine()  {
 
     ActiveFormulaModel f;
     QStringList args;
+    ActiveFormulaModel m;
 
 //    f.getCurrentFormula(tag, formula, args);
-    f.prosesFormulaScript(str, args);
+    f.prosesFormulaScript(m.validateFormulaScript(str), args);
 }
 
 MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
@@ -399,8 +400,8 @@ void MainControllerO::firstQueueFormula()    {
 //        qDebug() << rec;
 //        qDebug() << rec.value("content").toString();
         formula = modelActiveFormula.validateFormulaScript(rec.value("content").toString());
-        qDebug() << formula;
-        qDebug() << "---------------------------------";
+//        qDebug() << formula;
+//        qDebug() << "---------------------------------";
         tmp.id = rec.value("id").toInt();
         tmp.tag = rec.value("tag").toString();
         tmp.jobType = JOB_FORMULA;
