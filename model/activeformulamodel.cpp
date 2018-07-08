@@ -45,7 +45,7 @@ int ActiveFormulaModel::parsingParamFormula(QJsonObject o, QString &type, QStrin
 //*/
 
 // , QStringList &hasil
-int ActiveFormulaModel::getValueParamFormula(QJsonValue jv, QStringList args, QStringList &param)  {
+int ActiveFormulaModel::getValueParamFormula(QJsonValue jv, QStringList &params)  {
     QSqlQueryModel paramModel;
     QString type, value;
     QJsonArray apr, aps;
@@ -53,12 +53,14 @@ int ActiveFormulaModel::getValueParamFormula(QJsonValue jv, QStringList args, QS
     int ipr=0, ips=0, ipar=0;
     int n=0, m=0;
     QJsonDocument  json;
-//    QStringList param;
+    QStringList param;
 
     QString qry;
     {
         SqlDb sql;
         sql.openConnDB();
+
+        int waktu = 1530550813;
 
         if(jv.isArray()) {
             apr = jv.toArray();
@@ -86,7 +88,8 @@ int ActiveFormulaModel::getValueParamFormula(QJsonValue jv, QStringList args, QS
                     if (type=="query")  {
                         QJsonArray     arr;
                         arr.empty();
-                        qry = QString(value).arg("1530550813","1530558855");
+                        qry = QString(value).arg(QString::number(waktu), QString::number(waktu+86400-1)); // 1530550813. 1530558855
+//                        qry = QString(value).arg("1530550813", "1530558855"); //
                         qDebug() << "qry: " << qry;
                         paramModel.setQuery(qry);
                         qDebug() << "jml rec:"<< paramModel.rowCount();
@@ -109,15 +112,14 @@ int ActiveFormulaModel::getValueParamFormula(QJsonValue jv, QStringList args, QS
                         QString str(json.toJson(QJsonDocument::Compact));
 
                         str.replace("\"","\'");
-                        qDebug() << "Str:"<< str;
+//                        qDebug() << "Str:"<< str;
                         param.append(str);
-                        qDebug() << "======================================";
+//                        qDebug() << "======================================";
                     }
 //*/
                 }
             }
-//            qDebug() << paramModel;
-            qDebug() <<"Param:"<< param;
+//            qDebug() <<"Param:"<< param;
         }
         else {
             opr = jv.toObject();
@@ -129,6 +131,7 @@ int ActiveFormulaModel::getValueParamFormula(QJsonValue jv, QStringList args, QS
         QSqlDatabase::removeDatabase(list[i]);
     }
 
+    params = param;
     return ipar;
 }
 
@@ -189,126 +192,16 @@ int ActiveFormulaModel::prosesFormulaScript(QString kode, QStringList args)  {
     int ipr=0, ips=0, ipar=0;
     int n=0, m=0;
     int index=0;
-    QStringList param, args;
+    QStringList param;
     QStringList pre, post;
 
     if (f.value("tag").isArray())        at = f.value("tag").toArray();
 
-    getValueParamFormula(f.value("pre"), args, pre);
+    getValueParamFormula(f.value("pre"), pre);
+    qDebug() <<"Hasil pre:"<< pre;
 //    getValueParamFormula(okode, f.value("post"), param, index, post);
 
     return 1;
-    QSqlQueryModel *pm;
-
-    {
-        qDebug() << f.value("pre");
-        if(f.value("pre").isArray()) {
-            apr = f.value("pre").toArray();
-            ipr = apr.count();
-            ipar = okode.count(QLatin1String(":p"));
-            qDebug() << ipar;
-
-            if (ipar>0)   {
-                for (int i=0; i<ipar; i++) {
-                    n = str.indexOf(QRegExp(":p"), n);
-                    m = str.indexOf(QRegExp("[;, +-/*%]"), n);
-        //            qDebug() << "/ ada di" << n << ", \\n di "<< m;
-                    QString sub = str.mid(n, (m-n));
-                    qDebug()<<"Sub:"<< sub;
-                    param.append(sub);
-                    n++;
-                }
-            }
-
-            pm = new QSqlQueryModel[ipr];
-            for(int i=0; i<ipr; i++)    {
-//                QSqlQuery q;
-//                parsingParamFormula(apr[i].toObject(), args);
-
-            }
-            qDebug() << "-----";
-            for(int i=0; i<ipar; i++)   {
-
-            }
-        }
-        else
-            opr = f.value("pre").toObject();
-    }
-
-
-    delete[] pm;
-
-
-//    QJsonArray ps = (f.value("post").isArray())?f.value("post").toArray():f.value("post").toObject();
-
-    qDebug() << "tag    " << at;
-    qDebug() << "f.value(pre).isArray()" << f.value("pre").isArray();
-    qDebug() << "f.value(post).isArray()" << f.value("post").isArray();
-/*
-    QJsonArray apr  = f.value("pre").isArray(); //?f.value("pre").toArray():NULL;
-    QJsonObject opr = (!apr.count())?f.value("pre").toObject():NULL;
-    QJsonArray aps  = f.value("post").isArray();//?f.value("post").toArray():NULL;
-    QJsonObject ops = (!aps.count())?f.value("post").toObject():NULL;
-//    qDebug() << f.value("post").isArray() << f.value("post").toObject() << ps;
-    return;
-
-//    QString     c = "var val = function() { " + f.value("code").toString() + "}";
-
-//    qDebug() << f;
-//    qDebug() << t;
-//    qDebug() << pr;
-//    qDebug() << ps;
-    if (apr.count())    {
-        for (int i=0; i<apr.count(); i++) {
-    //        qDebug() << p[i].toObject().value("value").toString();
-            parsingParamFormula(apr[i].toObject(), args);
-        }
-    }
-    else {
-        parsingParamFormula(opr, args);
-    }
-
-//    for (int i=0; i<ps.count(); i++) {
-////        qDebug() << p[i].toObject().value("value").toString();
-//        parsingParamFormula(ps[i].toObject(), args);
-//    }
-
-    QString     c = "(function() { " + f.value("code").toString() + "})";
-//*/
-/*
-//    return -1;
-
-    QScriptEngine eng;
-    QScriptValueList arg;
-    QScriptValue val = eng.evaluate(c);
-    QScriptValue res = val.call(QScriptValue(), arg);
-
-    if (eng.hasUncaughtException()) {
-        int line = eng.uncaughtExceptionLineNumber();
-        qDebug() << "uncaught exception at line" << line;// << ":" << threeAgain.toString();
-        return -1;
-    }
-
-    int nArray = res.property("length").toInteger();
-    if (nArray<=0)   {
-        return -1;
-    }
-
-    QString q = QString("INSERT INTO data (id, value, epoch) VALUES ");
-    for (int i=0; i<nArray; i++)    {
-        if (i>0)   {
-            q.append(",");
-        }
-        double val = res.property(i).property("value").toNumber();
-        int epoch = res.property(i).property("epoch").toInteger();
-//        qDebug() << val << epoch;
-        q.append(QString("('%1'").arg(at[i].toInt()));
-        q.append(QString(",'%1'").arg(val));
-        q.append(QString(",'%1')").arg(epoch));
-    }
-    qDebug() << "sql: " << q;
-    return nArray;
-//*/
     return 0;
 }
 
