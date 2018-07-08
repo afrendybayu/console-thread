@@ -30,11 +30,12 @@ int getCurrentFormula(stJobQueue job, QStringList args)  {
 }
 
 //*
-int ActiveFormulaModel::parsingParamFormula(QJsonObject o, QString &type, QString &value)   {
+int ActiveFormulaModel::parsingParamFormula(QJsonObject o, QString &nama, QString &type, QString &value)   {
     QString xtype = o.value("type").toString();
-    QString xnama = o.value("name").toString();
+//    QString xnama = o.value("name").toString();
+    nama = o.value("name").toString();
 
-    QString strQ;
+//    QString strQ;
     if (xtype == "query")    {
         type  = xtype;
         value = o.value("value").toString();
@@ -45,13 +46,14 @@ int ActiveFormulaModel::parsingParamFormula(QJsonObject o, QString &type, QStrin
 //*/
 
 // , QStringList &hasil
-int ActiveFormulaModel::getValueParamFormula(QJsonValue jv, QStringList &index, QStringList &params)  {
+int ActiveFormulaModel::getValueParamFormula(QJsonValue jv, int &waktu, QStringList &index, QStringList &params)  {
     QSqlQueryModel paramModel;
     QString nama, type, value;
     QJsonArray apr, aps;
     QJsonObject opr, ops;
     int ipr=0, ips=0, ipar=0;
     int n=0, m=0;
+    int epoch;
     QJsonDocument  json;
     QStringList param;
 
@@ -60,7 +62,12 @@ int ActiveFormulaModel::getValueParamFormula(QJsonValue jv, QStringList &index, 
         SqlDb sql;
         sql.openConnDB();
 
-        int waktu = 1530550813;
+        if (waktu == 0)    {
+            epoch = 1530550813;
+        }
+        else {
+            epoch = waktu;
+        }
 
         if(jv.isArray()) {
             apr = jv.toArray();
@@ -86,14 +93,16 @@ int ActiveFormulaModel::getValueParamFormula(QJsonValue jv, QStringList &index, 
             for(int i=0; i<ipr; i++)    {
                 if (parsingParamFormula(apr[i].toObject(), nama, type, value))    {
                     if (type=="query")  {
-                        index[i] = ":"+nama;
+//                        qDebug() << "nama:"<< nama;
+                        index.append(QString(":%1").arg(nama));
+
                         QJsonArray     arr;
                         arr.empty();
-                        qry = QString(value).arg(QString::number(waktu), QString::number(waktu+86400-1)); // 1530550813. 1530558855
+                        qry = QString(value).arg(QString::number(epoch), QString::number(epoch+86400-1)); // 1530550813. 1530558855
 //                        qry = QString(value).arg("1530550813", "1530558855"); //
-                        qDebug() << "qry: " << qry;
+//                        qDebug() << "qry: " << qry;
                         paramModel.setQuery(qry);
-                        qDebug() << "jml rec:"<< paramModel.rowCount();
+//                        qDebug() << "jml rec:"<< paramModel.rowCount();
                         for (int j=0; j<paramModel.rowCount(); j++) {
                             QSqlRecord rec = paramModel.record(j);
 //                            qDebug() << rec.value("id").toString() << rec.value("min").toFloat() << rec.value("avg").toFloat() << rec.value("max").toFloat();
@@ -136,6 +145,57 @@ int ActiveFormulaModel::getValueParamFormula(QJsonValue jv, QStringList &index, 
     return ipar;
 }
 
+int ActiveFormulaModel::exeEngineScript(QStringList tag, QString kode)   {
+    QScriptEngine eng;
+    QScriptValueList arg;
+    QScriptValue val = eng.evaluate(kode);
+    QScriptValue res = val.call(QScriptValue(), arg);
+
+    qDebug() << "sampesini 1";
+    if (eng.hasUncaughtException()) {
+        int line = eng.uncaughtExceptionLineNumber();
+        qDebug() << "uncaught exception at line" << line;// << ":" << threeAgain.toString();
+        return -1;
+    }
+
+    int nArray = res.property("length").toInteger();
+    qDebug() << "sampesini 2" << nArray;
+    if (nArray<=0)   {
+        return -1;
+    }
+
+    qDebug() << "sampesini 2";
+    QString q = QString("INSERT INTO data (id, value, epoch) VALUES ");
+    for (int i=0; i<nArray; i++)    {
+        if (i>0)   {
+            q.append(",");
+        }
+        double val = res.property(i).property("value").toNumber();
+        int epoch = res.property(i).property("epoch").toInteger();
+//        qDebug() << val << epoch;
+        q.append(QString("('%1'").arg(tag[i]));
+        q.append(QString(",'%1'").arg(val));
+        q.append(QString(",'%1')").arg(epoch));
+    }
+    qDebug() << "sampesini 3";
+    qDebug() << "sql: " << q;
+
+    {
+        SqlDb sql;
+        sql.openConnDB();
+        QSqlQueryModel model;
+//        model.setQuery(q);
+        sql.closeConnDB();
+    }
+    QStringList list = QSqlDatabase::connectionNames();
+    for(int i = 0; i < list.count(); ++i) {
+        QSqlDatabase::removeDatabase(list[i]);
+    }
+
+
+    return nArray;
+
+}
 
 QString ActiveFormulaModel::validateFormulaScript(QString kode) {
     int n=0, m=0;
@@ -187,28 +247,34 @@ int ActiveFormulaModel::prosesFormulaScript(QString kode, QStringList args)  {
     if (f.isEmpty()) return -1;
 //    qDebug() << ;
 //    QJsonArray at = {};
-    QJsonArray at, apr, aps;
-    QJsonObject opr, ops;
-    QString okode = f.value("code").toString();
-    int ipr=0, ips=0, ipar=0;
-    int n=0, m=0;
-    int index=0;
+    QJsonArray at;
+//    int index=0;
     QStringList param;
-    QStringList pre, post;
+    QStringList index, pre, post, tag;
 
     if (f.value("tag").isArray())        at = f.value("tag").toArray();
+    if (at.count()<=0)  return -1;
+    qDebug() << "at:"<< at;
+    for (int i=0; i<at.count(); i++)    {
+        qDebug() << "at:" << at[i].toInt();
+        tag.append(QString::number(at[i].toInt()));
+    }
 
-    getValueParamFormula(f.value("pre"), pre);
-    qDebug() <<"Hasil pre:"<< pre;
+    int waktu = 0;
+    getValueParamFormula(f.value("pre"), waktu, index, pre);
+//    qDebug() <<"Hasil pre:"<< pre;
 
     QString     c = "var val = function() { " + f.value("code").toString() + "}";
-    for (int i=0; i<pre.count(); i++)   {
-
+    for (int i=0; i<index.count(); i++)   {
+//        qDebug() << index[i];
+        c.replace(index[i], pre[i]);
     }
-//    getValueParamFormula(okode, f.value("post"), param, index, post);
+    qDebug() << "Hasil kode:"<< c;
+    exeEngineScript(tag, c);
+//    getValueParamFormula(okode, f.value("post"), waktu, index, post);
+
 
     return 1;
-    return 0;
 }
 
 int ActiveFormulaModel::exeFormulaScript(stJobQueue job)  {

@@ -17,9 +17,13 @@ public:
 //    int parsingParamFormula(QJsonObject o, QStringList args);
     int parsingParamFormula(QJsonObject o, QString &nama, QString &type, QString &value);
     QString validateFormulaScript(QString kode);
-    int exeFormulaScript(stJobQueue job);
-    int getValueParamFormula(QJsonValue jv, QStringList &index, QStringList &hasil);
+
+    int getValueParamFormula(QJsonValue jv, int &waktu, QStringList &index, QStringList &hasil);
 //  QStringList args,
+
+private:
+    int exeEngineScript(QStringList tag, QString kode);
+    int exeFormulaScript(stJobQueue job);
 };
 
 #endif // ACTIVEFORMULAMODEL_H
