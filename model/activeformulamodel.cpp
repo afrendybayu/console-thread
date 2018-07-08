@@ -52,6 +52,9 @@ int ActiveFormulaModel::getValueParamFormula(QJsonValue jv)  {
     QJsonObject opr, ops;
     int ipr=0, ips=0, ipar=0;
     int n=0, m=0;
+    QJsonDocument  json;
+    QStringList param;
+
     QString qry;
     {
         SqlDb sql;
@@ -60,6 +63,7 @@ int ActiveFormulaModel::getValueParamFormula(QJsonValue jv)  {
         if(jv.isArray()) {
             apr = jv.toArray();
             ipr = apr.count();
+
             /*
             ipar = okode.count(QLatin1String(":p"));
             qDebug() << ipar;
@@ -76,29 +80,48 @@ int ActiveFormulaModel::getValueParamFormula(QJsonValue jv)  {
                 }
             }
     //*/
-//            qDebug() << "sampe sini" << ipr << apr[0].toObject();
-//            pm = new QSqlQueryModel[ipr];
+
             for(int i=0; i<ipr; i++)    {
                 if (parsingParamFormula(apr[i].toObject(), type, value))    {
                     if (type=="query")  {
+                        QJsonArray     arr;
+                        arr.empty();
                         qry = QString(value).arg("1530550813","1530558855");
-        //*
+                        qDebug() << "qry: " << qry;
                         paramModel.setQuery(qry);
                         qDebug() << "jml rec:"<< paramModel.rowCount();
-    //*
                         for (int j=0; j<paramModel.rowCount(); j++) {
                             QSqlRecord rec = paramModel.record(j);
-                            qDebug() << rec.value("id") << rec.value("min") << rec.value("avg") << rec.value("max");
+//                            qDebug() << rec.value("id").toString() << rec.value("min").toFloat() << rec.value("avg").toFloat() << rec.value("max").toFloat();
 //                            qDebug() << paramModel.record(j);
+                            QJsonObject obj;
+//                            qDebug() << rec;
+                            for (int k=0; k<5; k++)     {
+                                obj.insert(rec.fieldName(k), QJsonValue::fromVariant(rec.value(k)));
+                            }
+                            arr.insert(j, obj);
+//                            qDebug() << obj;
                         }
+//                        qDebug()<<"Arr:"<< QString(arr);
+
+                        json.setArray(arr);
+//                        qDebug()<<"JSON: "<< QString(json;
+                        QString str(json.toJson(QJsonDocument::Compact));
+
+                        str.replace("\"","\'");
+                        qDebug() << "Str:"<< str;
+                        param.append(str);
+                        qDebug() << "======================================";
                     }
 //*/
                 }
             }
+//            qDebug() << paramModel;
             qDebug() << "-----";
             for(int i=0; i<ipar; i++)   {
 
             }
+            qDebug() <<"Param:"<< param;
         }
         else {
             opr = jv.toObject();

@@ -174,19 +174,20 @@ void MainControllerO::init()    {
 
     this->connect(mTimerQueue, SIGNAL(timeout()), this, SLOT(updateQueue()));
     this->connect(mTimerExe, SIGNAL(timeout()), this, SLOT(exeQueue()));
-//    mTimerExe->start(1000);
-//    QString str = QString("\r\n\r\n-------------------------------\r\nmasuk constructor MainController");
-//           .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
-//    simpanFile(str);
+
+//    qDebug() << mActiveFormula->record(0);
+    QJsonObject recordObject;
+    recordObject.insert(
+        mActiveFormula->record(0).fieldName(0),
+        QJsonValue::fromVariant(mActiveFormula->record(0).value(0).toString()));
+    recordObject.insert(
+        mActiveFormula->record(0).fieldName(1),
+        QJsonValue::fromVariant(mActiveFormula->record(0).value(1).toString()));
+//    qDebug() << recordObject;
+
     firstQueueDAQ();
     firstQueueFormula();
-/*
-    for (int i=0; i<mServerConfig->rowCount(); i++)     {
-        QSqlRecord rec;
-        rec = mServerConfig->record(i);
-        qDebug() << rec;
-    }
-//*/
+
     mTimerQueue->start(2000);
 }
 
