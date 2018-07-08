@@ -45,9 +45,9 @@ int ActiveFormulaModel::parsingParamFormula(QJsonObject o, QString &type, QStrin
 //*/
 
 // , QStringList &hasil
-int ActiveFormulaModel::getValueParamFormula(QJsonValue jv, QStringList &params)  {
+int ActiveFormulaModel::getValueParamFormula(QJsonValue jv, QStringList &index, QStringList &params)  {
     QSqlQueryModel paramModel;
-    QString type, value;
+    QString nama, type, value;
     QJsonArray apr, aps;
     QJsonObject opr, ops;
     int ipr=0, ips=0, ipar=0;
@@ -84,8 +84,9 @@ int ActiveFormulaModel::getValueParamFormula(QJsonValue jv, QStringList &params)
     //*/
 
             for(int i=0; i<ipr; i++)    {
-                if (parsingParamFormula(apr[i].toObject(), type, value))    {
+                if (parsingParamFormula(apr[i].toObject(), nama, type, value))    {
                     if (type=="query")  {
+                        index[i] = ":"+nama;
                         QJsonArray     arr;
                         arr.empty();
                         qry = QString(value).arg(QString::number(waktu), QString::number(waktu+86400-1)); // 1530550813. 1530558855
@@ -199,6 +200,11 @@ int ActiveFormulaModel::prosesFormulaScript(QString kode, QStringList args)  {
 
     getValueParamFormula(f.value("pre"), pre);
     qDebug() <<"Hasil pre:"<< pre;
+
+    QString     c = "var val = function() { " + f.value("code").toString() + "}";
+    for (int i=0; i<pre.count(); i++)   {
+
+    }
 //    getValueParamFormula(okode, f.value("post"), param, index, post);
 
     return 1;

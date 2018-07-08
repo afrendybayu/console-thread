@@ -15,11 +15,11 @@ public:
     int getCurrentFormula(stJobQueue job, QStringList args);
     int prosesFormulaScript(QString kode, QStringList args);
 //    int parsingParamFormula(QJsonObject o, QStringList args);
-    int parsingParamFormula(QJsonObject o, QString &type, QString &value);
+    int parsingParamFormula(QJsonObject o, QString &nama, QString &type, QString &value);
     QString validateFormulaScript(QString kode);
     int exeFormulaScript(stJobQueue job);
-    int getValueParamFormula(QJsonValue jv, QStringList &hasil);
-//  QStringList args,  , QStringList index
+    int getValueParamFormula(QJsonValue jv, QStringList &index, QStringList &hasil);
+//  QStringList args,
 };
 
 #endif // ACTIVEFORMULAMODEL_H
