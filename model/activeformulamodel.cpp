@@ -45,7 +45,7 @@ int ActiveFormulaModel::parsingParamFormula(QJsonObject o, QString &type, QStrin
 //*/
 
 // , QStringList &hasil
-int ActiveFormulaModel::getValueParamFormula(QJsonValue jv)  {
+int ActiveFormulaModel::getValueParamFormula(QJsonValue jv, QStringList args, QStringList &param)  {
     QSqlQueryModel paramModel;
     QString type, value;
     QJsonArray apr, aps;
@@ -53,7 +53,7 @@ int ActiveFormulaModel::getValueParamFormula(QJsonValue jv)  {
     int ipr=0, ips=0, ipar=0;
     int n=0, m=0;
     QJsonDocument  json;
-    QStringList param;
+//    QStringList param;
 
     QString qry;
     {
@@ -117,10 +117,6 @@ int ActiveFormulaModel::getValueParamFormula(QJsonValue jv)  {
                 }
             }
 //            qDebug() << paramModel;
-            qDebug() << "-----";
-            for(int i=0; i<ipar; i++)   {
-
-            }
             qDebug() <<"Param:"<< param;
         }
         else {
@@ -132,7 +128,6 @@ int ActiveFormulaModel::getValueParamFormula(QJsonValue jv)  {
     for(int i = 0; i < list.count(); ++i) {
         QSqlDatabase::removeDatabase(list[i]);
     }
-//    delete[] pm;
 
     return ipar;
 }
@@ -194,12 +189,12 @@ int ActiveFormulaModel::prosesFormulaScript(QString kode, QStringList args)  {
     int ipr=0, ips=0, ipar=0;
     int n=0, m=0;
     int index=0;
-    QStringList param;
+    QStringList param, args;
     QStringList pre, post;
 
     if (f.value("tag").isArray())        at = f.value("tag").toArray();
 
-    getValueParamFormula(f.value("pre"));
+    getValueParamFormula(f.value("pre"), args, pre);
 //    getValueParamFormula(okode, f.value("post"), param, index, post);
 
     return 1;
