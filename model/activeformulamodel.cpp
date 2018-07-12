@@ -67,7 +67,7 @@ int ActiveFormulaModel::getValueParamFormula(int id, QJsonValue jv, int &waktu, 
 //            epoch = 1530550813;
             paramModel.clear();
             // SELECT '1490' as id, ,
-            qry = QString("SELECT '%1' as id, IFNULL((SELECT STRFTIME('%s',DATE(max(f.last_update),'unixepoch'),'utc') FROM formula f WHERE ID=%1),0) as epoch "
+            qry = QString("SELECT '%1' as id, IFNULL((SELECT STRFTIME('%s',DATE(max(f.last_update),'unixepoch'),'utc') FROM formula f WHERE ID=%1)+86400,0) as epoch "
                           "UNION ALL "
                           "SELECT '%1',(STRFTIME('%s',date('now'),'utc')-(SELECT (o.desc*86400) FROM option o WHERE nama like '%formula_day_ago%')) as epoch ").arg(id);
 
@@ -130,7 +130,7 @@ int ActiveFormulaModel::getValueParamFormula(int id, QJsonValue jv, int &waktu, 
                         arr.empty();
                         qry = QString(value).arg(QString::number(epoch), QString::number(epoch+86400-1)); // 1530550813. 1530558855
 //                        qry = QString(value).arg("1530550813", "1530558855"); //
-//                        qDebug() << "qry: " << qry;
+                        qDebug() << "qry["<<i<<"]:" << qry;
                         paramModel.clear();
                         paramModel.setQuery(qry);
 //                        qDebug() << "jml rec:"<< paramModel.rowCount();
@@ -177,12 +177,15 @@ int ActiveFormulaModel::getValueParamFormula(int id, QJsonValue jv, int &waktu, 
 }
 
 int ActiveFormulaModel::exeEngineScript(QStringList tag, QString kode)   {
+    qDebug() << "tag:"<< tag;
+
     QScriptEngine eng;
     QScriptValueList arg;
     QScriptValue val = eng.evaluate(kode);
     QScriptValue res = val.call(QScriptValue(), arg);
 
-    qDebug() << "sampesini 1";
+    qDebug() << "sampesini 1" << val.isValid() << res.isValid();
+
     if (eng.hasUncaughtException()) {
         int line = eng.uncaughtExceptionLineNumber();
         qDebug() << "uncaught exception at line" << line;// << ":" << threeAgain.toString();
@@ -195,8 +198,8 @@ int ActiveFormulaModel::exeEngineScript(QStringList tag, QString kode)   {
         return -1;
     }
 
-    qDebug() << "sampesini 2";
-    QString q = QString("INSERT INTO data (id, value, epoch) VALUES ");
+    qDebug() << "sampesini 3";
+    QString q = QString("INSERT INTO data (id, value, epochtime) VALUES ");
     for (int i=0; i<nArray; i++)    {
         if (i>0)   {
             q.append(",");
@@ -208,14 +211,14 @@ int ActiveFormulaModel::exeEngineScript(QStringList tag, QString kode)   {
         q.append(QString(",'%1'").arg(val));
         q.append(QString(",'%1')").arg(epoch));
     }
-    qDebug() << "sampesini 3";
+    qDebug() << "sampesini 4";
     qDebug() << "sql: " << q;
 
     {
         SqlDb sql;
         sql.openConnDB();
         QSqlQueryModel model;
-//        model.setQuery(q);
+        model.setQuery(q);
         sql.closeConnDB();
     }
     QStringList list = QSqlDatabase::connectionNames();
@@ -293,7 +296,8 @@ int ActiveFormulaModel::prosesFormulaScript(QString kode, int id)  {
     getValueParamFormula(id, f.value("pre"), waktu, index, pre);
 //    qDebug() <<"Hasil pre:"<< pre;
 
-    QString     c = "var val = function() { " + f.value("code").toString() + "}";
+    QString     c = "(function() { " + f.value("code").toString() + "})";
+//    QString     c = f.value("code").toString();
     for (int i=0; i<index.count(); i++)   {
         c.replace(index[i], pre[i]);
     }

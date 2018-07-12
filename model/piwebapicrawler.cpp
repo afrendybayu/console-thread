@@ -138,10 +138,10 @@ void PiWebApiCrawler::replyFinishedRecorded(QNetworkReply *reply)    {
     parsingRecordedDataPiWebApi(this->mJob.id, ba, data);
     simpanRecordedDataWebApi(data);
 //*/
-
     emit resultReady(ba);
 //    emit resultReady(mArg);
     emit finished();
+    qDebug()<< "<<<<<< finished Simpan Recorded Data PiWebApiCrawler";
 }
 
 void PiWebApiCrawler::slotTesting() {

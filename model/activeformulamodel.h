@@ -19,10 +19,10 @@ public:
     QString validateFormulaScript(QString kode);
 
 //  QStringList args,
+    int exeEngineScript(QStringList tag, QString kode);
 
 private:
     int getValueParamFormula(int id, QJsonValue jv, int &waktu, QStringList &index, QStringList &hasil);
-    int exeEngineScript(QStringList tag, QString kode);
 //    int exeFormulaScript(stJobQueue job);
 };
 
