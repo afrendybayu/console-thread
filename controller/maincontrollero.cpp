@@ -59,10 +59,11 @@ void tesScriptEngine()  {
 
     ActiveFormulaModel f;
     QStringList args;
+    int id = 1490;
     ActiveFormulaModel m;
 
 //    f.getCurrentFormula(tag, formula, args);
-    f.prosesFormulaScript(m.validateFormulaScript(str), args);
+    f.prosesFormulaScript(m.validateFormulaScript(str), id);
 }
 
 MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
@@ -91,9 +92,9 @@ MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
 void MainControllerO::slotGetResultPiCrawler(QByteArray resp)  {
 
     qDebug() << "+++ masuk MainControllerO::slotGetResultPiCrawler, parsing Data" << resp;
-    PiWebApiCrawler px("");
-    int id, last;
-    QList<stRecordedDataPiWebAPi> data;
+//    PiWebApiCrawler px("");
+//    int id, last;
+//    QList<stRecordedDataPiWebAPi> data;
 
 //    px.parsingRecordedDataPiWebApi(id, resp, data);
     //    while (!th->isFinished()) {
@@ -200,10 +201,9 @@ void MainControllerO::updateQueue()   {
                  QString::number(QDateTime::currentMSecsSinceEpoch()));
     simpanFile(str);
 
-//    int epoch = (int) QDateTime::currentSecsSinceEpoch();
-//    qDebug() << "updateQueue" << "njobQueue: " << jobQueue.count() << ", Thread: " << threadCount;
-//             << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz") <<", now:"<< epoch <<  QThread::currentThreadId();
-//           "mActiveTag->rowCount()" << mActiveTag->rowCount()
+    int epoch = (int) QDateTime::currentSecsSinceEpoch();
+    qDebug() << "updateQueue njobQueue:"<< jobQueue.count()<< ", Thread: "<< threadCount
+             << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz") <<", now:"<< epoch <<  QThread::currentThreadId();
 
     int j=0;
     stJobQueue tmp;
@@ -225,6 +225,9 @@ void MainControllerO::updateQueue()   {
                 if (ajaxDone)
 #endif
                     sedot(jobQueue[j]);
+                else {
+                    qDebug() << "tidak sedot"<< jobQueue[j].id << jobQueue[j].tag;
+                }
             if (jobQueue[j].jobType == JOB_FORMULA)
                 doCalculating(j, jobQueue[j]);
         }
@@ -449,9 +452,13 @@ int  MainControllerO::doCalculating(int id, stJobQueue job)   {
     QStringList args;
 
 //    f.getCurrentFormula(tag, formula, args);
-    f.prosesFormulaScript(job.kode, args);
+    qDebug() << "id:"<< job.id;
+    f.prosesFormulaScript(job.kode, job.id);
 
 
     jobQueue[id].status = JOB_DONE;
     return JOB_DONE;
 }
+//  prosesFormulaScript
+//      getValueParamFormula
+//      exeEngineScript

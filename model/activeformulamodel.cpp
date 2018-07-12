@@ -5,6 +5,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QtSql>
+#include <QThread>
 #include <utils/sqldb.h>
 
 ActiveFormulaModel::ActiveFormulaModel()    {
@@ -46,13 +47,13 @@ int ActiveFormulaModel::parsingParamFormula(QJsonObject o, QString &nama, QStrin
 //*/
 
 // , QStringList &hasil
-int ActiveFormulaModel::getValueParamFormula(QJsonValue jv, int &waktu, QStringList &index, QStringList &params)  {
+int ActiveFormulaModel::getValueParamFormula(int id, QJsonValue jv, int &waktu, QStringList &index, QStringList &params)  {
     QSqlQueryModel paramModel;
     QString nama, type, value;
-    QJsonArray apr, aps;
-    QJsonObject opr, ops;
-    int ipr=0, ips=0, ipar=0;
-    int n=0, m=0;
+    QJsonArray apr;     //, aps;
+    QJsonObject opr;    //, ops;
+    int ipr=0, ipar=0;  //ips=0,
+//    int n=0, m=0;
     int epoch;
     QJsonDocument  json;
     QStringList param;
@@ -63,7 +64,36 @@ int ActiveFormulaModel::getValueParamFormula(QJsonValue jv, int &waktu, QStringL
         sql.openConnDB();
 
         if (waktu == 0)    {
-            epoch = 1530550813;
+//            epoch = 1530550813;
+            paramModel.clear();
+            // SELECT '1490' as id, ,
+            qry = QString("SELECT '%1' as id, IFNULL((SELECT STRFTIME('%s',DATE(max(f.last_update),'unixepoch'),'utc') FROM formula f WHERE ID=%1),0) as epoch "
+                          "UNION ALL "
+                          "SELECT '%1',(STRFTIME('%s',date('now'),'utc')-(SELECT (o.desc*86400) FROM option o WHERE nama like '%formula_day_ago%')) as epoch ").arg(id);
+
+//                          ",DATETIME(IFNULL((SELECT f.last_update FROM formula f WHERE ID=1490),0),'unixepoch') as waktu "
+//                          ",DATETIME((STRFTIME('%s',date('now'),'utc')-(SELECT (o.desc*86400) FROM option o WHERE nama like '%formula_day_ago%')),'unixepoch') as waktu "
+//                          ",DATETIME(d.epochtime,'unixepoch') as waktu "
+//            "UNION ALL "
+//            "SELECT id, max(d.epochtime) as epoch FROM data d where ID = '%1'"
+
+
+
+            qDebug() <<"query:"<< qry;
+            paramModel.setQuery(qry);
+
+            if (!paramModel.rowCount()) return -1;
+//            for (int i=0; i<paramModel.rowCount(); i++) {
+//                QSqlRecord rec = paramModel.record(i);
+//                qDebug() << "Rec:"<< rec.value("epoch").toInt();
+//            }
+            int formula = paramModel.record(0).value("epoch").toInt();
+            int sapuber = paramModel.record(1).value("epoch").toInt();
+
+            if (!formula)   epoch = sapuber;
+            else epoch = formula;
+            waktu = epoch;
+            qDebug() << "#########################";
         }
         else {
             epoch = waktu;
@@ -101,6 +131,7 @@ int ActiveFormulaModel::getValueParamFormula(QJsonValue jv, int &waktu, QStringL
                         qry = QString(value).arg(QString::number(epoch), QString::number(epoch+86400-1)); // 1530550813. 1530558855
 //                        qry = QString(value).arg("1530550813", "1530558855"); //
 //                        qDebug() << "qry: " << qry;
+                        paramModel.clear();
                         paramModel.setQuery(qry);
 //                        qDebug() << "jml rec:"<< paramModel.rowCount();
                         for (int j=0; j<paramModel.rowCount(); j++) {
@@ -159,7 +190,7 @@ int ActiveFormulaModel::exeEngineScript(QStringList tag, QString kode)   {
     }
 
     int nArray = res.property("length").toInteger();
-    qDebug() << "sampesini 2" << nArray;
+    qDebug() << "sampesini 2" << nArray << QThread::currentThreadId();
     if (nArray<=0)   {
         return -1;
     }
@@ -231,7 +262,7 @@ QString ActiveFormulaModel::validateFormulaScript(QString kode) {
     return resCode;
 }
 
-int ActiveFormulaModel::prosesFormulaScript(QString kode, QStringList args)  {
+int ActiveFormulaModel::prosesFormulaScript(QString kode, int id)  {
     QString str = QString("{");
     str.append(kode);
     str.append(" }");
@@ -243,40 +274,37 @@ int ActiveFormulaModel::prosesFormulaScript(QString kode, QStringList args)  {
     QJsonObject o = JsonDoc.object();
     QJsonObject f = o.value("formula").toObject();
 
-    qDebug() << "---------f-------";
+//    qDebug() << "---------f-------";
     if (f.isEmpty()) return -1;
-//    qDebug() << ;
-//    QJsonArray at = {};
+
     QJsonArray at;
-//    int index=0;
-    QStringList param;
+//    QStringList param;
     QStringList index, pre, post, tag;
 
     if (f.value("tag").isArray())        at = f.value("tag").toArray();
     if (at.count()<=0)  return -1;
-    qDebug() << "at:"<< at;
+
     for (int i=0; i<at.count(); i++)    {
-        qDebug() << "at:" << at[i].toInt();
+//        qDebug() << "at:" << at[i].toInt();
         tag.append(QString::number(at[i].toInt()));
     }
 
     int waktu = 0;
-    getValueParamFormula(f.value("pre"), waktu, index, pre);
+    getValueParamFormula(id, f.value("pre"), waktu, index, pre);
 //    qDebug() <<"Hasil pre:"<< pre;
 
     QString     c = "var val = function() { " + f.value("code").toString() + "}";
     for (int i=0; i<index.count(); i++)   {
-//        qDebug() << index[i];
         c.replace(index[i], pre[i]);
     }
     qDebug() << "Hasil kode:"<< c;
-    exeEngineScript(tag, c);
-//    getValueParamFormula(okode, f.value("post"), waktu, index, post);
+    if (exeEngineScript(tag, c))
+        getValueParamFormula(id, f.value("post"), waktu, index, post);
 
 
     return 1;
 }
 
-int ActiveFormulaModel::exeFormulaScript(stJobQueue job)  {
-    return 0;
-}
+//int ActiveFormulaModel::exeFormulaScript(stJobQueue job)  {
+//    return 0;
+//}

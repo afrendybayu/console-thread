@@ -50,8 +50,8 @@ for (i=0; i<nD1; i++)	{
 		x++; y++;	
 		continue;
 	}
-	console.log("diproses: "+data2[y].value+", nilai: "+data1[x].value);
-	tot+=data1[i].value;
+	
+//	tot+=data1[i].value;
 	if (urut==0)	{
 		min = data1[x];
 		max = data1[x];
@@ -60,21 +60,27 @@ for (i=0; i<nD1; i++)	{
 		min = mini(min, data1[x]);
 		max = maxi(max, data1[x]);
 	}
-	console.log("++++++ d1: "+ data1[x].epoch+", d2: "+data2[y].epoch);
+//	console.log("++++++ d1: "+ data1[x].epoch+", d2: "+data2[y].epoch);
 	urut++;
-	console.log("x: "+x+", y: "+y+", min: "+min.value+", max: "+max.value);
+//	console.log("x: "+x+", y: "+y+", min: "+min.value+", max: "+max.value);
 	
 	if (data1[x].epoch==data2[y].epoch) {
+		console.log("diproses: "+data2[y].value+", nilai: "+data1[x].value);
+		tot+=data1[x].value;
 		x++;
-		y++;
+		y++;		
 //**		console.log(">>> k: "+k+", x: "+x);
 	} 
 	else if (data1[x].epoch<data2[y].epoch)	{
+		console.log("diproses: "+data2[y].value+", nilai: "+data1[x].value);
 		console.log("masuk kurang. d1: "+ data1[x].epoch+", d2: "+data2[y].epoch);
+		tot+=data1[x].value;
 		x++;
 	}
 	else if (data1[x].epoch>data2[y].epoch)	{
-		console.log("masuk lebih. d1: "+ data1[x].epoch+", d2: "+data2[y].epoch);
+		console.log("diproses: "+data2[y].value+", nilai: "+data1[x-1].value);
+		console.log("masuk lebih. d1: "+data1[x-1].value+", d2: "+data2[y].epoch);
+		tot+=data1[x-1].value;
 		y++;
 		i--;
 	}
