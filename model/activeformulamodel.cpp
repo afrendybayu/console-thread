@@ -176,8 +176,8 @@ int ActiveFormulaModel::getValueParamFormula(int id, QJsonValue jv, int &waktu, 
     return ipar;
 }
 
-int ActiveFormulaModel::exeEngineScript(QStringList tag, QString kode)   {
-    qDebug() << "tag:"<< tag;
+int ActiveFormulaModel::exeEngineScript(QStringList tags, QString kode, int id)   {
+    qDebug() << "tag:"<< tags;
 
     QScriptEngine eng;
     QScriptValueList arg;
@@ -198,20 +198,21 @@ int ActiveFormulaModel::exeEngineScript(QStringList tag, QString kode)   {
         return -1;
     }
 
-    qDebug() << "sampesini 3";
+//    qDebug() << "sampesini 3";
+    int epoch;
     QString q = QString("INSERT INTO data (id, value, epochtime) VALUES ");
     for (int i=0; i<nArray; i++)    {
         if (i>0)   {
             q.append(",");
         }
         double val = res.property(i).property("value").toNumber();
-        int epoch = res.property(i).property("epoch").toInteger();
+        epoch = res.property(i).property("epoch").toInteger();
 //        qDebug() << val << epoch;
-        q.append(QString("('%1'").arg(tag[i]));
+        q.append(QString("('%1'").arg(tags[i]));
         q.append(QString(",'%1'").arg(val));
         q.append(QString(",'%1')").arg(epoch));
     }
-    qDebug() << "sampesini 4";
+//    qDebug() << "sampesini 4";
     qDebug() << "sql: " << q;
 
     {
@@ -219,6 +220,12 @@ int ActiveFormulaModel::exeEngineScript(QStringList tag, QString kode)   {
         sql.openConnDB();
         QSqlQueryModel model;
         model.setQuery(q);
+
+//        qDebug() << "epoch"<< epoch<<", id:"<< id;
+        q = QString("UPDATE formula SET last_update='%1' WHERE id='%2'").arg(QString::number(epoch),QString::number(id));
+        model.setQuery(q);
+        qDebug() << "query formula:"<< q;
+
         sql.closeConnDB();
     }
     QStringList list = QSqlDatabase::connectionNames();
@@ -301,8 +308,9 @@ int ActiveFormulaModel::prosesFormulaScript(QString kode, int id)  {
     for (int i=0; i<index.count(); i++)   {
         c.replace(index[i], pre[i]);
     }
-    qDebug() << "Hasil kode:"<< c;
-    if (exeEngineScript(tag, c))
+    //qDebug() << "Hasil kode:"<< c;
+    qDebug() << "Hasil id:"<< id;
+    if (exeEngineScript(tag, c, id))
         getValueParamFormula(id, f.value("post"), waktu, index, post);
 
 
