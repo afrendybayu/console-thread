@@ -163,7 +163,7 @@ QString PiWebApiCrawler::getLastDataTime(QString tag)  {
                 ", ifnull((select last_update from tag_tmms_detail where tag like '\%1\%'),'0') as last_data "
                 ", (select desc from option where nama like '%daq_day_ago%') as day_ago")
             .arg(tag);
-//    qDebug() << "sql: "<< q;
+    qDebug() << "sql: "<< q;
     {
         SqlDb sql;
         sql.openConnDB();
