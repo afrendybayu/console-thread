@@ -34,7 +34,8 @@ SOURCES += main.cpp \
     model/activeformulamodel.cpp \
     utils/sqldb.cpp \
     utils/utilsutils.cpp \
-    controller/maincontrollero.cpp
+    controller/maincontrollero.cpp \
+    model/piwebapimodel.cpp
 
 #    model/piwebapicrawler.cpp
 #    controller/maincontrollerthread.cpp \
@@ -49,7 +50,8 @@ HEADERS += \
     utils/sqldb.h \
     utils/struct.h \
     utils/utilsutils.h \
-    controller/maincontrollero.h
+    controller/maincontrollero.h \
+    model/piwebapimodel.h
 
 #    model/piwebapicrawler.h
 #    controller/maincontrollerthread.h \

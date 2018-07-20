@@ -20,7 +20,7 @@ class PiWebApiCrawler : public QObject
     Q_OBJECT
 public:
 //    explicit PiWebApiCrawler(QObject *parent = nullptr);
-    explicit PiWebApiCrawler(QObject *parent = nullptr, QString arg = "test");
+//    explicit PiWebApiCrawler(QObject *parent = nullptr, QString arg = "test");
     PiWebApiCrawler(QString arg = "test");
 
     ~PiWebApiCrawler();
@@ -34,6 +34,7 @@ public:
 signals:
 //    void resultReady(QString str);
     void resultReady(QByteArray ba);
+    void resultReadyTh(int thId, QByteArray ba);
     void finished();
 
 public slots:

@@ -10,16 +10,20 @@
 #include "piwebapicrawler.h"
 #include <utils/sqldb.h>
 
+#define MULTI_THREAD
+
 //PiWebApiCrawler::PiWebApiCrawler(QObject *parent) : QObject(parent)
 //{
 ////    connect(&manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinishedRecorded(QNetworkReply *)));
 //}
 
+/*
 PiWebApiCrawler::PiWebApiCrawler(QObject *parent, QString arg) : QObject(parent)
 {
 //    connect(&manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinishedRecorded(QNetworkReply *)));
     mArg = arg;
 }
+//*/
 
 PiWebApiCrawler::PiWebApiCrawler(QString arg) : QObject()
 {
@@ -131,21 +135,25 @@ void PiWebApiCrawler::replyFinishedRecorded(QNetworkReply *reply)    {
     reply->deleteLater();
 
 //    qDebug() << ba;
-//*
+
     // kalau penyimpanan langsung dari model. *Tapi belum dapat id titik ukur
 //    int last;
     QList<stRecordedDataPiWebAPi> data;
     parsingRecordedDataPiWebApi(this->mJob.id, ba, data);
     simpanRecordedDataWebApi(data);
-//*/
+
     emit resultReady(ba);
+
+#ifdef MULTI_THREAD
+    emit resultReadyTh(mJob.thId, ba);
+#endif
 //    emit resultReady(mArg);
     emit finished();
     qDebug()<< "<<<<<< finished Simpan Recorded Data PiWebApiCrawler";
 }
 
 void PiWebApiCrawler::slotTesting() {
-    qDebug() << ">>>>>> masuk piwebapicrawler : " << QThread::currentThreadId() << ", arg: " << mArg;
+    qDebug() << ">>>>>> masuk piwebapicrawler : " << QThread::currentThreadId() << ", arg: " << mArg << QThread::currentThreadId();
     QThread::sleep(5);
     qDebug() << "<<<<<< selesai piwebapicrawler : " << QThread::currentThreadId();
 //    emit resultReady(mArg);

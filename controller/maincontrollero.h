@@ -14,6 +14,8 @@
 #include <model/activeformulamodel.h>
 #include <model/piwebapicrawler.h>
 
+#include <model/piwebapimodel.h>
+
 
 class MainControllerO : public QObject
 {
@@ -35,6 +37,7 @@ private slots:
     void exeQueue();
     void slotThFinish();
     void slotGetResultPiCrawler(QByteArray resp);
+    void slotGetResultPiCrawlerTh(int thId, int urut, QByteArray resp);
 
 private:
     void init();
@@ -45,10 +48,15 @@ private:
     int  doCrawling(int id, stJobQueue job);
     int  doCalculating(int id, stJobQueue job);
 
+    int  doCrawling(stJobQueue job, int urut);
+
     void sedot(stJobQueue job);
 
     QThread* th;
     PiWebApiCrawler* pi;
+
+    QThread* pth;
+    PiWebApiModel* ppi;
     bool disabled;
     int threadCount;
     bool ajaxDone;
@@ -71,6 +79,8 @@ private:
     QSqlQueryModel *mActiveTag;
     QSqlQueryModel *mActiveFormula;
 
+    int jmlThread;
+    QList<int> iTh;
 };
 
 #endif // MAINCONTROLLERO_H

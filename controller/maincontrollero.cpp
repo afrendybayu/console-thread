@@ -9,6 +9,7 @@
 
 #define PAKAI_SINGLE_THREAD
 //#define PAKAI_MULTI_THREAD
+#define MULTI_THREAD
 
 #ifdef   Q_OS_UNIX
 #define LOG_FILE "log.txt"
@@ -16,10 +17,10 @@
 #define LOG_FILE "C:/Users/afrendy/Documents/koding/ext/log.txt"
 #endif
 
+/*
 void tesDataRecorded()  {
     qDebug() << "bisakah ??";
 
-    /*
     QFile file("./airinlet.json");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
@@ -37,11 +38,10 @@ void tesDataRecorded()  {
     int last;
     int a = p.parsingRecordedDataPiWebApi(1000, ba, data);
     p.simpanRecordedDataWebApi(data);
-    //*/
 }
 
 void tesScriptEngine()  {
-//*
+
     QFile file("./hitung2.json");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
@@ -52,10 +52,6 @@ void tesScriptEngine()  {
         str += in.readLine();
     }
     qDebug() << str;
-//*/
-
-
-
 
     ActiveFormulaModel f;
     QStringList args;
@@ -78,6 +74,7 @@ void tesExeScript() {
     ActiveFormulaModel f;
     f.exeEngineScript(tags, kode, 1846);
 }
+//*/
 
 MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
 {
@@ -90,17 +87,60 @@ MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
 //    tesExeScript();
 //    return;
 
+
+    disabled = false;
+
     qDebug() << "masuk thread MainControllerO : "<< QThread::currentThreadId();
     init();
 
-    disabled = false;
 
 
 #ifdef PAKAI_SINGLE_THREAD
     connect(pi, &PiWebApiCrawler::finished, this, &MainControllerO::slotThFinish);
 #endif
 
+#ifdef MULTI_THREAD
 
+#endif
+}
+
+void MainControllerO::slotGetResultPiCrawlerTh(int thId, int urut, QByteArray resp)  {
+    int x;
+    qDebug() << "<<<<<<<<<<<<<<< MainControllerO::slotGetResultPiCrawler:"<< thId;  // << resp;
+    for (int i=0; i<jmlThread; i++) {
+        if (iTh[i]==thId)   {
+            x=i;
+            break;
+        }
+    }
+    iTh.removeAt(x);
+    qDebug() << "sisa:"<< iTh.count()<<", urut:"<< urut;
+//*
+    while (jobQueue[urut].nextnextJob < QDateTime::currentSecsSinceEpoch())    {
+        jobQueue[urut].status = JOB_FREE;
+        jobQueue[urut].nextnextJob += jobQueue[urut].periode;
+    }
+//*/
+
+//    PiWebApiCrawler px("");
+//    int id, last;
+//    QList<stRecordedDataPiWebAPi> data;
+
+//    px.parsingRecordedDataPiWebApi(id, resp, data);
+    //    while (!th->isFinished()) {
+//        QThread::sleep(1);
+//        qDebug() << "MASIH jalan";
+//    }
+//    while(th->isRunning());
+//        qDebug() << "sudah mati";
+//    else
+//        qDebug() << "masih jalan";
+//    delete th;
+//    delete pi;
+
+#ifdef MULTI_THREAD
+
+#endif
 
 }
 
@@ -123,6 +163,11 @@ void MainControllerO::slotGetResultPiCrawler(QByteArray resp)  {
 //        qDebug() << "masih jalan";
 //    delete th;
 //    delete pi;
+
+#ifdef MULTI_THREAD
+
+#endif
+
 }
 
 void MainControllerO::slotThFinish()    {
@@ -139,7 +184,11 @@ void MainControllerO::slotThFinish()    {
     threadCount = (threadCount<=0)?0:(threadCount-1);
     qDebug() << "sisa thread: " << threadCount;
 #endif
-//    sqlite.closeConnDB();
+
+#ifdef MULTI_THREAD
+
+#endif
+
     ajaxDone = true;
     qDebug() << "ajaxDone"<< ajaxDone;
 }
@@ -160,6 +209,11 @@ MainControllerO::~MainControllerO()    {
 
     pi = NULL;
     delete pi;
+
+    pth = NULL;
+    delete [] pth;
+    ppi = NULL;
+    delete [] ppi;
 }
 
 void MainControllerO::pause()    {
@@ -176,6 +230,18 @@ void MainControllerO::init()    {
     mTimerExe = new QTimer();
     ajaxDone = true;
     pi = new PiWebApiCrawler("");
+
+#ifdef MULTI_THREAD
+    jmlThread = 3;
+    pth = new QThread[jmlThread];
+    ppi = new PiWebApiModel[jmlThread];
+
+    for (int i=0; i<jmlThread; i++) {
+        connect(&pth[i], &QThread::started, &ppi[i], &PiWebApiModel::slotTesting);
+        connect(&ppi[i], &PiWebApiModel::resultReadyTh, this, &MainControllerO::slotGetResultPiCrawlerTh);
+        connect(&ppi[i], SIGNAL(finished()), &pth[i], SLOT(quit()));
+    }
+#endif
 
 
     qDebug() << "masuk constructor MainController" << QThread::currentThreadId()
@@ -221,7 +287,8 @@ void MainControllerO::updateQueue()   {
 
     int epoch = (int) QDateTime::currentSecsSinceEpoch();
     qDebug() << "update njob:"<< jobQueue.count()<< ", Thread:"<< threadCount
-             << QDateTime::currentDateTime().toString("HH:mm:ss.zzz")<<", now:"<< epoch << QThread::currentThreadId();
+             << QDateTime::currentDateTime().toString("HH:mm:ss.zzz")<<", now:"<< epoch << QThread::currentThreadId()
+             << iTh.count();
 
     int j=0;
     stJobQueue tmp;
@@ -231,14 +298,21 @@ void MainControllerO::updateQueue()   {
         if (jobQueue[j].nextnextJob < QDateTime::currentSecsSinceEpoch()) {
 //            qDebug() << "next: "<<jobQueue[j].nextnextJob<<", current:"<< QDateTime::currentSecsSinceEpoch();
 
+#ifdef MULTI_THREAD
+            if (jobQueue[j].jobType == JOB_DAQ) {
+                if (jobQueue[j].status == JOB_FREE) {
+                    doCrawling(jobQueue[j], j);
+                }
+            }
+#endif
+#ifdef PAKAI_SINGLE_THREADx
             if (jobQueue[j].jobType == JOB_DAQ && ajaxDone) {
 //            if (jobQueue[j].jobType == JOB_DAQ) {
                 qDebug() << jobQueue[j].tag << ajaxDone;
-#ifdef PAKAI_SINGLE_THREAD
+
 //                while(!ajaxDone)
 //                    QThread::usleep(1000);
                 if (ajaxDone)   {
-#endif
                     sedot(jobQueue[j]);
                     while (jobQueue[j].nextnextJob < QDateTime::currentSecsSinceEpoch())    {
                         jobQueue[j].status = JOB_FREE;
@@ -249,6 +323,7 @@ void MainControllerO::updateQueue()   {
                     qDebug() << "tidak sedot"<< jobQueue[j].id << jobQueue[j].tag;
                 }
             }
+#endif
             if (jobQueue[j].jobType == JOB_FORMULA) {
                 doCalculating(j, jobQueue[j]);
                 while (jobQueue[j].nextnextJob < QDateTime::currentSecsSinceEpoch())    {
@@ -346,8 +421,8 @@ void MainControllerO::sedot(stJobQueue job) {
 #endif
 
 #ifdef PAKAI_SINGLE_THREAD
-    qDebug() << "------- Pakai SINGLE THREAD -------";
     ajaxDone = false;
+    qDebug() << "------- Pakai SINGLE THREAD -------";
     pi->reqWebApiDataRecordedSingle(job);
 #endif
 }
@@ -404,7 +479,7 @@ void MainControllerO::firstQueueDAQ()   {
 //            tmp.lastJob = QDateTime::currentSecsSinceEpoch();
         tmp.lastJob = 0;
         tmp.jobType = JOB_DAQ;
-        tmp.status  = JOB_WAITING;
+        tmp.status  = JOB_FREE;
         tmp.source  = rec.value("source").toInt();
         tmp.webId   = rec.value("webid").toString();
 //            tmp.periode = wkt;
@@ -444,6 +519,42 @@ void MainControllerO::firstQueueFormula()    {
         qDebug() << ">>>>>> nextJob firstQUeueForm: " << tmp.nextnextJob;
         jobQueue.append(tmp);
     }
+}
+
+int  MainControllerO::doCrawling(stJobQueue job, int urut)   {
+    int i = iTh.count();
+    if (i>=(jmlThread))   return -1;
+
+    int j = i+1;
+    iTh.append(j);
+    qDebug() <<"i:" << i<<", "<< job.tag << iTh.count() << "isi[x]:"<< iTh[i];
+    jobQueue[urut].status = JOB_WAITING;
+    job.thId = j;
+    ppi[i].passingParam(job, urut);
+    ppi[i].moveToThread(&pth[i]);
+    pth[i].start();
+
+    /*
+    if (iTh.count()==0) {
+        iTh.append(1);
+        qDebug() << job.tag << iTh.count() << "isi[0]:"<< iTh[0];
+        jobQueue[urut].status = JOB_WAITING;
+        job.thId = iTh[0];
+        ppi[iTh[0]-1].passingParam(job, urut);
+        ppi[iTh[0]-1].moveToThread(&pth[iTh[0]-1]);
+        pth[iTh[0]-1].start();
+    }
+    //*
+    else {
+        iTh.append(i+1);
+        qDebug() << job.tag << iTh.count() << "isi[x]:"<< iTh[i];
+        jobQueue[urut].status = JOB_WAITING;
+        ppi[i].passingParam(job, urut);
+        ppi[i].moveToThread(&pth[i]);
+        pth[i].start();
+    }
+    //*/
+//    qDebug() << "qList:"<< iTh.count();
 }
 
 int  MainControllerO::doCrawling(int id, stJobQueue job)   {
