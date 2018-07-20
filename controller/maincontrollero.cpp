@@ -93,6 +93,8 @@ MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
     qDebug() << "masuk thread MainControllerO : "<< QThread::currentThreadId();
     init();
 
+    disabled = false;
+
 
 #ifdef PAKAI_SINGLE_THREAD
     connect(pi, &PiWebApiCrawler::finished, this, &MainControllerO::slotThFinish);
@@ -236,7 +238,7 @@ void MainControllerO::updateQueue()   {
 ////                qDebug() << "next: "<<jobQueue[j].nextnextJob<<", current:"<< QDateTime::currentSecsSinceEpoch();
 //            }
 //            qDebug() << "next: "<<jobQueue[j].nextnextJob<<", current:"<< QDateTime::currentSecsSinceEpoch();
-            if (jobQueue[j].jobType == JOB_DAQ)
+            if (jobQueue[j].jobType == JOB_DAQ && ajaxDone) {
                 qDebug() << jobQueue[j].tag << ajaxDone;
 #ifdef PAKAI_SINGLE_THREAD
 //                while(!ajaxDone)
@@ -252,12 +254,14 @@ void MainControllerO::updateQueue()   {
                 else {
                     qDebug() << "tidak sedot"<< jobQueue[j].id << jobQueue[j].tag;
                 }
-            if (jobQueue[j].jobType == JOB_FORMULA)
+            }
+            if (jobQueue[j].jobType == JOB_FORMULA) {
                 doCalculating(j, jobQueue[j]);
                 while (jobQueue[j].nextnextJob < QDateTime::currentSecsSinceEpoch())    {
                     jobQueue[j].status = JOB_FREE;
                     jobQueue[j].nextnextJob += jobQueue[j].periode;
                 }
+            }
         }
         j++;
     }
