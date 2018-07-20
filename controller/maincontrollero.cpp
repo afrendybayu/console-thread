@@ -230,15 +230,9 @@ void MainControllerO::updateQueue()   {
 //        qDebug() << "j: "<<j<<", updateQueue nextnextJob:"<< jobQueue[j].nextnextJob<<", now:"<< QString::number(QDateTime::currentMSecsSinceEpoch())<<", periode:"<< jobQueue[j].periode;
         if (jobQueue[j].nextnextJob < QDateTime::currentSecsSinceEpoch()) {
 //            qDebug() << "next: "<<jobQueue[j].nextnextJob<<", current:"<< QDateTime::currentSecsSinceEpoch();
-//            while (jobQueue[j].nextnextJob < QDateTime::currentSecsSinceEpoch())    {
-//                jobQueue[j].status = JOB_FREE;
-////                qDebug() << "  GANTI JJJJADDDDUULLLLL: " << tmp.tag << (QDateTime::currentSecsSinceEpoch()-tmp.nextJob) << tmp.lastJob << tmp.nextJob << tmp.status << "periode: " << jobQueue[j].periode;
-//                jobQueue[j].nextnextJob += jobQueue[j].periode;
-////                    this->doCrawling(j, jobQueue[j]);
-////                qDebug() << "next: "<<jobQueue[j].nextnextJob<<", current:"<< QDateTime::currentSecsSinceEpoch();
-//            }
-//            qDebug() << "next: "<<jobQueue[j].nextnextJob<<", current:"<< QDateTime::currentSecsSinceEpoch();
+
             if (jobQueue[j].jobType == JOB_DAQ && ajaxDone) {
+//            if (jobQueue[j].jobType == JOB_DAQ) {
                 qDebug() << jobQueue[j].tag << ajaxDone;
 #ifdef PAKAI_SINGLE_THREAD
 //                while(!ajaxDone)

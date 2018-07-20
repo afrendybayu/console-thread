@@ -60,7 +60,7 @@ void PiWebApiCrawler::run(QString urls) {
 //void PiWebApiCrawler::reqWebApiDataRecordedSingle(QString tag) {
 void PiWebApiCrawler::reqWebApiDataRecordedSingle(stJobQueue job) {
     this->mJob = job;
-//    qDebug() << "run Thread piweb crawler " << QThread::currentThreadId() << ":" << job.tag;
+    qDebug() << "run Thread piweb crawler " << QThread::currentThreadId() << ":" << job.tag;
     QString awal  = getLastDataTime(job.tag);
 //    QString akhir = QDateTime::fromString(awal, "yyyy-MM-dd 00:00:00").addDays(1).addSecs(-1).toString("yyyy-MM-dd HH:mm:ss");
 //    qDebug() << "last data: " << last;
