@@ -107,15 +107,23 @@ MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
 void MainControllerO::slotGetResultPiCrawlerTh(int thId, int urut, QByteArray resp)  {
 #ifdef MULTI_THREAD
     mutex.lock();
-    int x;
-    qDebug() << ">>>>>>>>>>>>>>> MainControllerO::slotGetResultPiCrawler:"<< thId;  // << resp;
-    for (int i=0; i<jmlThread; i++) {
+    int x = -1;
+    int j = iTh.count();
+    qDebug() << "<<<<<<<<<<<<< MainControllerO::slotGetResultPiCrawler:"<< thId<<"/"<<iTh.count();  // << resp;
+    QString isilist = "";
+
+    for (int i=0; i<j; i++) {
+        isilist.append(" "); isilist.append(iTh[i]);
+    }
+    qDebug() << isilist;
+
+    for (int i=0; i<j; i++) {
         if (iTh[i] == thId)   {
             x=i;
-            break;
+            iTh.removeAt(x);
         }
     }
-    iTh.removeAt(x);
+
 //    disconnect(ppi);
 //    disconnect(pth);
 
@@ -517,11 +525,34 @@ int  MainControllerO::doCrawling(stJobQueue job, int urut)   {
     }
 
     mutex.lock();
-    int j = i+1;
-    iTh.append(j);
-    qDebug() <<"i:" << i<<", "<< job.tag << iTh.count() << "isi[x]:"<< iTh[i];
+    int k=1;
+
+    if (i==0)    {
+        k = 1;
+    }
+    else {
+        bool ke;
+        for (int j=1; j<=jmlThread; j++) {
+            ke = false;
+            for (int l=0; l<i; l++) {   // thread ke-
+//                qDebug() << "---- masuk j:"<< j<<", k:"<< k;
+                if (iTh[l]==j)  {
+                    ke = true;
+//                    qDebug() << "j sama:"<< j<<", k:"<< k;
+                }
+                if (!ke)    k=j;
+            }
+
+            if (!ke)    {
+                break;
+            }
+        }
+    }
+
+    iTh.append(k);  // yg bikin sesat !!
+    qDebug() <<"k:"<< k<<", i:" << i<<", "<< job.tag << iTh.count() << "isi[x]:"<< iTh[i];
     jobQueue[urut].status = JOB_WAITING;
-    job.thId = j;
+    job.thId = k;
     ppi[i].passingParam(job, urut);
     ppi[i].moveToThread(&pth[i]);
     pth[i].start();
