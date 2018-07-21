@@ -22,19 +22,21 @@ PiWebApiModel::~PiWebApiModel() {
 }
 
 void PiWebApiModel::slotTesting() {
-    qDebug() << "masuk PiWebApiModel::slotTesting" << QThread::currentThreadId();
-    qDebug() << ">>>>>>>>>>>>>"<< mJob.tag << ":" << mJob.thId;
-    QThread::sleep(10);
+    qDebug() << ">>>>>>>>>> masuk PiWebApiModel::slotTesting" << QThread::currentThreadId() << mJob.tag << "pi:"<< mPi;
+    qDebug() << mJob.tag << ":" << mJob.thId;
+    QThread::sleep(2);
 
     QByteArray ba = QString("ini hasilnya").toUtf8();
-    emit resultReadyTh(mJob.thId, mUrut, ba);
+    emit resultReadyTh(mJob.thId, mUrut, mTh, mPi, ba);
     emit finished();
 }
 
-void PiWebApiModel::passingParam(stJobQueue job, int urut)  {
+void PiWebApiModel::passingParam(stJobQueue job, int urut, int th, int pi)  {
     this->mJob = job;
     this->mUrut = urut;
-    qDebug() << "PiWebApiModel::passingParam"<< job.tag;
+    this->mTh = th;
+    this->mPi = pi;
+    qDebug() << "[++++++++++++++++] PiWebApiModel::passingParam"<< job.tag << mTh <<", pi:"<< mPi;
 }
 
 
@@ -88,7 +90,7 @@ void PiWebApiModel::replyFinishedRecorded(QNetworkReply *reply)    {
 //    parsingRecordedDataPiWebApi(this->mJob.id, ba, data);
 //    simpanRecordedDataWebApi(data);
 
-    emit resultReadyTh(mJob.thId, mUrut, ba);
+    emit resultReadyTh(mJob.thId, mUrut, mTh, mPi, ba);
 //    emit resultReady(ba);
 
 #ifdef MULTI_THREAD

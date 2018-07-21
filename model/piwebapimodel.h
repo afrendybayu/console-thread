@@ -18,10 +18,10 @@ public:
     explicit PiWebApiModel(QObject *parent = nullptr);
     ~PiWebApiModel();
     void reqWebApiDataRecordedSingle(stJobQueue job);
-    void passingParam(stJobQueue job, int urut);
+    void passingParam(stJobQueue job, int urut, int th, int pi);
 
 signals:
-    void resultReadyTh(int thId, int urut, QByteArray ba);
+    void resultReadyTh(int thId, int urut, int th, int pi, QByteArray ba);
     void finished();
 
 public slots:
@@ -36,6 +36,8 @@ private:
     QNetworkRequest xrequest;
     QString mArg;
     int mUrut;
+    int mTh;
+    int mPi;
 
     QString getLastDataTime(QString tag);
 

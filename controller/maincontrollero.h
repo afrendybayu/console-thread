@@ -38,7 +38,7 @@ private slots:
     void exeQueue();
     void slotThFinish();
     void slotGetResultPiCrawler(QByteArray resp);
-    void slotGetResultPiCrawlerTh(int thId, int urut, QByteArray resp);
+    void slotGetResultPiCrawlerTh(int thId, int urut, int th, int pi, QByteArray resp);
 
 private:
     void init();
@@ -82,6 +82,7 @@ private:
 
     int jmlThread;
     QList<int> iTh;
+    QList<int> pidTh;
     QMutex mutex;
 };
 

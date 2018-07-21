@@ -104,36 +104,49 @@ MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
 #endif
 }
 
-void MainControllerO::slotGetResultPiCrawlerTh(int thId, int urut, QByteArray resp)  {
+void MainControllerO::slotGetResultPiCrawlerTh(int thId, int urut, int th, int piId, QByteArray resp)  {
 #ifdef MULTI_THREAD
     mutex.lock();
     int x = -1;
     int j = iTh.count();
-    qDebug() << "<<<<<<<<<<<<< MainControllerO::slotGetResultPiCrawler:"<< thId<<"/"<<iTh.count();  // << resp;
+    qDebug() << "[---------------] MainControllerO::slotGetResultPiCrawler:"<< thId<<"/"<<iTh.count()
+             << jobQueue[urut].tag << jobQueue[urut].id << urut << th << piId;  // << resp;
     QString isilist = "";
+    QString pidlist = "";
 
     for (int i=0; i<j; i++) {
-        isilist.append(" "); isilist.append(iTh[i]);
+        isilist.append(" "); isilist.append(QString::number(iTh[i]));
+        pidlist.append(" "); pidlist.append(QString::number(pidTh[i]));
     }
-    qDebug() << isilist;
+    qDebug() << isilist << "  :  " << pidlist;
 
     for (int i=0; i<j; i++) {
         if (iTh[i] == thId)   {
             x=i;
+            disconnect(&ppi[piId],0,0,0);
+            disconnect(&pth[thId-1],0,0,0);
             iTh.removeAt(x);
+        }
+        if (pidTh[i]==jobQueue[urut].id) {
+            pidTh.removeAt(i);
         }
     }
 
-//    disconnect(ppi);
-//    disconnect(pth);
+    isilist = ""; pidlist = "";
+    j = iTh.count();
+    for (int i=0; i<j; i++) {
+        isilist.append(" "); isilist.append(QString::number(iTh[i]));
+        pidlist.append(" "); pidlist.append(QString::number(pidTh[i]));
+    }
 
-    qDebug() << "sisa:"<< iTh.count()<<", urut:"<< urut;
+    qDebug() << "sisa:"<< iTh.count()<<", urut:"<< urut << isilist << pidlist;
 //*
     while (jobQueue[urut].nextnextJob < QDateTime::currentSecsSinceEpoch())    {
         jobQueue[urut].status = JOB_FREE;
         jobQueue[urut].nextnextJob += jobQueue[urut].periode;
     }
 //*/
+    QThread::sleep(1);
     mutex.unlock();
 
 #endif
@@ -232,11 +245,11 @@ void MainControllerO::init()    {
     pth = new QThread[jmlThread];
     ppi = new PiWebApiModel[jmlThread];
 
-    for (int i=0; i<jmlThread; i++) {
-        connect(&pth[i], &QThread::started, &ppi[i], &PiWebApiModel::slotTesting);
-        connect(&ppi[i], &PiWebApiModel::resultReadyTh, this, &MainControllerO::slotGetResultPiCrawlerTh);
-        connect(&ppi[i], SIGNAL(finished()), &pth[i], SLOT(quit()));
-    }
+//    for (int i=0; i<jmlThread; i++) {
+//        connect(&pth[i], &QThread::started, &ppi[i], &PiWebApiModel::slotTesting);
+//        connect(&ppi[i], &PiWebApiModel::resultReadyTh, this, &MainControllerO::slotGetResultPiCrawlerTh);
+//        connect(&ppi[i], SIGNAL(finished()), &pth[i], SLOT(quit()));
+//    }
 #endif
 
 
@@ -282,7 +295,7 @@ void MainControllerO::updateQueue()   {
     simpanFile(str);
 
     int epoch = (int) QDateTime::currentSecsSinceEpoch();
-    qDebug() << "update njob:"<< jobQueue.count()<< ", Thread:"<< threadCount
+    qDebug() << "update njob:"<< jobQueue.count()<< ", Thread:"<< iTh.count()
              << QDateTime::currentDateTime().toString("HH:mm:ss.zzz")<<", now:"<< epoch << QThread::currentThreadId()
              << iTh.count();
 
@@ -549,14 +562,26 @@ int  MainControllerO::doCrawling(stJobQueue job, int urut)   {
         }
     }
 
-    iTh.append(k);  // yg bikin sesat !!
-    qDebug() <<"k:"<< k<<", i:" << i<<", "<< job.tag << iTh.count() << "isi[x]:"<< iTh[i];
+    qDebug() <<"th k:"<<k<<", pi:"<< i<<","<< job.tag << iTh.count();
+    connect(&pth[k-1], &QThread::started, &ppi[i], &PiWebApiModel::slotTesting);
+    connect(&ppi[i], &PiWebApiModel::resultReadyTh, this, &MainControllerO::slotGetResultPiCrawlerTh);
+    connect(&ppi[i], SIGNAL(finished()), &pth[k-1], SLOT(quit()));
+//    connect(&pth[k-1], SIGNAL(finished()), this, &MainControllerO:: );
+
     jobQueue[urut].status = JOB_WAITING;
     job.thId = k;
-    ppi[i].passingParam(job, urut);
-    ppi[i].moveToThread(&pth[i]);
-    pth[i].start();
+    ppi[i].passingParam(job, urut, k, i); // k,i
+    ppi[i].moveToThread(&pth[k-1]);
+    pth[k-1].start();
+    iTh.append(k);  // yg bikin sesat !!
+    pidTh.append(job.id);
     mutex.unlock();
+
+    QString pidlist;
+    for (int i=0; i<pidTh.count(); i++) {
+        pidlist.append(" "); pidlist.append(QString::number(pidTh[i]));
+    }
+    qDebug() << pidlist;
 
     return 0;
 }
@@ -564,7 +589,7 @@ int  MainControllerO::doCrawling(stJobQueue job, int urut)   {
 int  MainControllerO::doCrawling(int id, stJobQueue job)   {
     jobQueue[id].status = JOB_PENDING;
 //            jobQueue[i].nextnextJob = jobQueue[i].lastJob+wkt;
-    qDebug() << "<<<<<<<<<<<<<<< doCrawling execute tag:" << job.tag << QDateTime::currentSecsSinceEpoch() << job.nextJob << job.periode;
+    qDebug() << "[++++++++++++++] doCrawling execute tag:" << job.tag << QDateTime::currentSecsSinceEpoch() << job.nextJob << job.periode;
     jobQueue[id].status = JOB_EXECUTING;
 
     jobQueue[id].lastJob = jobQueue[id].nextJob;
