@@ -105,15 +105,20 @@ MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
 }
 
 void MainControllerO::slotGetResultPiCrawlerTh(int thId, int urut, QByteArray resp)  {
+#ifdef MULTI_THREAD
+    mutex.lock();
     int x;
-    qDebug() << "<<<<<<<<<<<<<<< MainControllerO::slotGetResultPiCrawler:"<< thId;  // << resp;
+    qDebug() << ">>>>>>>>>>>>>>> MainControllerO::slotGetResultPiCrawler:"<< thId;  // << resp;
     for (int i=0; i<jmlThread; i++) {
-        if (iTh[i]==thId)   {
+        if (iTh[i] == thId)   {
             x=i;
             break;
         }
     }
     iTh.removeAt(x);
+//    disconnect(ppi);
+//    disconnect(pth);
+
     qDebug() << "sisa:"<< iTh.count()<<", urut:"<< urut;
 //*
     while (jobQueue[urut].nextnextJob < QDateTime::currentSecsSinceEpoch())    {
@@ -121,24 +126,7 @@ void MainControllerO::slotGetResultPiCrawlerTh(int thId, int urut, QByteArray re
         jobQueue[urut].nextnextJob += jobQueue[urut].periode;
     }
 //*/
-
-//    PiWebApiCrawler px("");
-//    int id, last;
-//    QList<stRecordedDataPiWebAPi> data;
-
-//    px.parsingRecordedDataPiWebApi(id, resp, data);
-    //    while (!th->isFinished()) {
-//        QThread::sleep(1);
-//        qDebug() << "MASIH jalan";
-//    }
-//    while(th->isRunning());
-//        qDebug() << "sudah mati";
-//    else
-//        qDebug() << "masih jalan";
-//    delete th;
-//    delete pi;
-
-#ifdef MULTI_THREAD
+    mutex.unlock();
 
 #endif
 
@@ -522,9 +510,13 @@ void MainControllerO::firstQueueFormula()    {
 }
 
 int  MainControllerO::doCrawling(stJobQueue job, int urut)   {
-    int i = iTh.count();
-    if (i>=(jmlThread))   return -1;
 
+    int i = iTh.count();
+    if (i>=(jmlThread))   {
+        return -1;
+    }
+
+    mutex.lock();
     int j = i+1;
     iTh.append(j);
     qDebug() <<"i:" << i<<", "<< job.tag << iTh.count() << "isi[x]:"<< iTh[i];
@@ -533,34 +525,15 @@ int  MainControllerO::doCrawling(stJobQueue job, int urut)   {
     ppi[i].passingParam(job, urut);
     ppi[i].moveToThread(&pth[i]);
     pth[i].start();
+    mutex.unlock();
 
-    /*
-    if (iTh.count()==0) {
-        iTh.append(1);
-        qDebug() << job.tag << iTh.count() << "isi[0]:"<< iTh[0];
-        jobQueue[urut].status = JOB_WAITING;
-        job.thId = iTh[0];
-        ppi[iTh[0]-1].passingParam(job, urut);
-        ppi[iTh[0]-1].moveToThread(&pth[iTh[0]-1]);
-        pth[iTh[0]-1].start();
-    }
-    //*
-    else {
-        iTh.append(i+1);
-        qDebug() << job.tag << iTh.count() << "isi[x]:"<< iTh[i];
-        jobQueue[urut].status = JOB_WAITING;
-        ppi[i].passingParam(job, urut);
-        ppi[i].moveToThread(&pth[i]);
-        pth[i].start();
-    }
-    //*/
-//    qDebug() << "qList:"<< iTh.count();
+    return 0;
 }
 
 int  MainControllerO::doCrawling(int id, stJobQueue job)   {
     jobQueue[id].status = JOB_PENDING;
 //            jobQueue[i].nextnextJob = jobQueue[i].lastJob+wkt;
-    qDebug() << ">>>>>>>>>>>>>>> doCrawling execute tag:" << job.tag << QDateTime::currentSecsSinceEpoch() << job.nextJob << job.periode;
+    qDebug() << "<<<<<<<<<<<<<<< doCrawling execute tag:" << job.tag << QDateTime::currentSecsSinceEpoch() << job.nextJob << job.periode;
     jobQueue[id].status = JOB_EXECUTING;
 
     jobQueue[id].lastJob = jobQueue[id].nextJob;

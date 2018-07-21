@@ -4,6 +4,7 @@
 #include <QTimer>
 #include <QThread>
 #include <QSqlQueryModel>
+#include <QMutex>
 
 #include <utils/sqldb.h>
 #include <utils/struct.h>
@@ -81,6 +82,7 @@ private:
 
     int jmlThread;
     QList<int> iTh;
+    QMutex mutex;
 };
 
 #endif // MAINCONTROLLERO_H
