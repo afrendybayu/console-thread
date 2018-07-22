@@ -23,6 +23,7 @@ public:
 signals:
     void resultReadyTh(int thId, int urut, int th, int pi, QByteArray ba);
     void finished();
+    void signalMasukPi(int mth, int mpi);
 
 public slots:
     void slotTesting();

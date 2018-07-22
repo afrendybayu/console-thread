@@ -35,6 +35,7 @@ signals:
 //    void resultReady(QString str);
     void resultReady(QByteArray ba);
     void resultReadyTh(int thId, QByteArray ba);
+    void signalMasukPi(int th, int pi);
     void finished();
 
 public slots:

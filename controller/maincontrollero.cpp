@@ -125,6 +125,8 @@ void MainControllerO::slotGetResultPiCrawlerTh(int thId, int urut, int th, int p
             x=i;
             disconnect(&ppi[piId],0,0,0);
             disconnect(&pth[thId-1],0,0,0);
+            pth[thId-1].quit();
+            pth[thId-1].wait();
             iTh.removeAt(x);
         }
         if (pidTh[i]==jobQueue[urut].id) {
@@ -146,7 +148,7 @@ void MainControllerO::slotGetResultPiCrawlerTh(int thId, int urut, int th, int p
         jobQueue[urut].nextnextJob += jobQueue[urut].periode;
     }
 //*/
-    QThread::sleep(1);
+
     mutex.unlock();
 
 #endif
@@ -297,7 +299,7 @@ void MainControllerO::updateQueue()   {
     int epoch = (int) QDateTime::currentSecsSinceEpoch();
     qDebug() << "update njob:"<< jobQueue.count()<< ", Thread:"<< iTh.count()
              << QDateTime::currentDateTime().toString("HH:mm:ss.zzz")<<", now:"<< epoch << QThread::currentThreadId()
-             << iTh.count();
+             << "##############" << iTh.count();
 
     int j=0;
     stJobQueue tmp;
@@ -530,6 +532,16 @@ void MainControllerO::firstQueueFormula()    {
     }
 }
 
+void MainControllerO::slotThreadFinished() {
+    qDebug() << "****** masuk thFinish";
+}
+
+void MainControllerO::slotMasukPi(int th, int pi) {
+    qDebug() << "slotMasukPiThread" << th << pi;
+//    iTh.append(th);  // masuk methodnya telat !!
+//    pidTh.append(job.id);
+}
+
 int  MainControllerO::doCrawling(stJobQueue job, int urut)   {
 
     int i = iTh.count();
@@ -562,16 +574,30 @@ int  MainControllerO::doCrawling(stJobQueue job, int urut)   {
         }
     }
 
+//    k=2;
+//    i=1;
+
     qDebug() <<"th k:"<<k<<", pi:"<< i<<","<< job.tag << iTh.count();
     connect(&pth[k-1], &QThread::started, &ppi[i], &PiWebApiModel::slotTesting);
     connect(&ppi[i], &PiWebApiModel::resultReadyTh, this, &MainControllerO::slotGetResultPiCrawlerTh);
-    connect(&ppi[i], SIGNAL(finished()), &pth[k-1], SLOT(quit()));
-//    connect(&pth[k-1], SIGNAL(finished()), this, &MainControllerO:: );
+//    connect(&ppi[i], &PiWebApiModel::signalMasukPi, this, &MainControllerO::slotMasukPi);
+//    connect(&pth[k-1], SIGNAL(finished()), this, SLOT(slotThreadFinished()) );
+//    connect(&ppi[i], SIGNAL(finished()), this, SLOT(slotThreadFinished()));
 
     jobQueue[urut].status = JOB_WAITING;
     job.thId = k;
     ppi[i].passingParam(job, urut, k, i); // k,i
     ppi[i].moveToThread(&pth[k-1]);
+
+    if(ppi[i].thread() != &pth[k-1])  {
+        qDebug() << "======================= @@@@@@@@@ moveToThread failed.";
+        jobQueue[urut].status = JOB_FREE;
+        disconnect(&ppi[i],0,0,0);
+        disconnect(&pth[k-1],0,0,0);
+        mutex.unlock();
+        return -1;
+    }
+
     pth[k-1].start();
     iTh.append(k);  // yg bikin sesat !!
     pidTh.append(job.id);

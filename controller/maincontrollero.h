@@ -39,6 +39,8 @@ private slots:
     void slotThFinish();
     void slotGetResultPiCrawler(QByteArray resp);
     void slotGetResultPiCrawlerTh(int thId, int urut, int th, int pi, QByteArray resp);
+    void slotThreadFinished();
+    void slotMasukPi(int th, int pi);
 
 private:
     void init();
