@@ -123,7 +123,8 @@ void MainControllerO::slotGetResultPiCrawlerTh(int thId, int urut, int th, int p
     for (int i=0; i<j; i++) {
         if (iTh[i] == thId)   {
             x=i;
-            disconnect(&ppi[piId],0,0,0);
+//            disconnect(&ppi[piId],0,0,0);
+            disconnect(&ppi[thId-1],0,0,0);
             disconnect(&pth[thId-1],0,0,0);
             pth[thId-1].quit();
             pth[thId-1].wait();
@@ -578,28 +579,31 @@ int  MainControllerO::doCrawling(stJobQueue job, int urut)   {
 //    i=1;
 
     qDebug() <<"th k:"<<k<<", pi:"<< i<<","<< job.tag << iTh.count();
-    connect(&pth[k-1], &QThread::started, &ppi[i], &PiWebApiModel::slotTesting);
-    connect(&ppi[i], &PiWebApiModel::resultReadyTh, this, &MainControllerO::slotGetResultPiCrawlerTh);
-//    connect(&ppi[i], &PiWebApiModel::signalMasukPi, this, &MainControllerO::slotMasukPi);
-//    connect(&pth[k-1], SIGNAL(finished()), this, SLOT(slotThreadFinished()) );
-//    connect(&ppi[i], SIGNAL(finished()), this, SLOT(slotThreadFinished()));
+//    connect(&pth[k-1], &QThread::started, &ppi[i], &PiWebApiModel::slotTesting);
+//    connect(&ppi[i], &PiWebApiModel::resultReadyTh, this, &MainControllerO::slotGetResultPiCrawlerTh);
+
+    connect(&pth[k-1], &QThread::started, &ppi[k-1], &PiWebApiModel::slotTesting);
+    connect(&ppi[k-1], &PiWebApiModel::resultReadyTh, this, &MainControllerO::slotGetResultPiCrawlerTh);
+
 
     jobQueue[urut].status = JOB_WAITING;
     job.thId = k;
-    ppi[i].passingParam(job, urut, k, i); // k,i
-    ppi[i].moveToThread(&pth[k-1]);
+    ppi[k-1].passingParam(job, urut, k, i); // k,i
+    ppi[k-1].moveToThread(&pth[k-1]);
 
-    if(ppi[i].thread() != &pth[k-1])  {
+    if(ppi[k-1].thread() != &pth[k-1])  {
         qDebug() << "======================= @@@@@@@@@ moveToThread failed.";
         jobQueue[urut].status = JOB_FREE;
-        disconnect(&ppi[i],0,0,0);
+        disconnect(&ppi[k-1],0,0,0);
         disconnect(&pth[k-1],0,0,0);
+        QThread::msleep(2000);
         mutex.unlock();
         return -1;
     }
 
     pth[k-1].start();
     iTh.append(k);  // yg bikin sesat !!
+    iPi.append(i);
     pidTh.append(job.id);
     mutex.unlock();
 

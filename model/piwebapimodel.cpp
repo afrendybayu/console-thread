@@ -25,7 +25,7 @@ void PiWebApiModel::slotTesting() {
     qDebug() << ">>>>>>>>>> masuk PiWebApiModel::slotTesting" << QThread::currentThreadId() << mJob.tag << "pi:"<< mPi;
 //    emit signalMasukPi(this->mTh, this->mPi);
     qDebug() << mJob.tag << ":" << mJob.thId;
-    QThread::sleep(2);
+    QThread::sleep(4);
 
     QByteArray ba = QString("ini hasilnya").toUtf8();
     emit resultReadyTh(mJob.thId, mUrut, mTh, mPi, ba);

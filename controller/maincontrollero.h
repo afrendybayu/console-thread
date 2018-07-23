@@ -85,6 +85,7 @@ private:
     int jmlThread;
     QList<int> iTh;
     QList<int> pidTh;
+    QList<int> iPi;
     QMutex mutex;
 };
 
