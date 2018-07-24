@@ -10,7 +10,7 @@ class ServerConfigModel : public QSqlQueryModel   {
 //    Q_OBJECT
 public:
     ServerConfigModel();
-    int initData(QSqlQueryModel* model);
+    int initData(QSqlQueryModel* model, QString koneksi);
 //    void initData(int a);
 //    void init();
 

@@ -23,14 +23,15 @@ PiWebApiModel::~PiWebApiModel() {
 
 void PiWebApiModel::slotTesting() {
     qDebug() << ">>>>>>>>>> masuk PiWebApiModel::slotTesting" << QThread::currentThreadId() << mJob.tag << "pi:"<< mPi;
-//    emit signalMasukPi(this->mTh, this->mPi);
-    qDebug() << mJob.tag << ":" << mJob.thId;
+
+//    qDebug() << mJob.tag << ":" << mJob.thId;
+//*
     QThread::sleep(4);
 
     QByteArray ba = QString("ini hasilnya").toUtf8();
     emit resultReadyTh(mJob.thId, mUrut, mTh, mPi, ba);
-//    emit finished();
-//    qDebug() << "emit finished"<< mTh << mPi;
+//*/
+//    this->reqWebApiDataRecordedSingle();
 }
 
 void PiWebApiModel::passingParam(stJobQueue job, int urut, int th, int pi)  {
@@ -41,6 +42,26 @@ void PiWebApiModel::passingParam(stJobQueue job, int urut, int th, int pi)  {
     qDebug() << "[++++++++++++++++] PiWebApiModel::passingParam"<< job.tag << mTh <<", pi:"<< mPi;
 }
 
+void PiWebApiModel::reqWebApiDataRecordedSingle() {
+    qDebug() << "run Thread piweb crawler " << QThread::currentThreadId() << ":" << mJob.tag;
+//    QString awal  = getLastDataTime(mJob.tag);
+    QString awal = "";
+    QNetworkRequest request;
+//    qDebug() << " 9 -----------------------------";
+    QString urls = URL_WEBAPI_DATA_RECORDED + mJob.webId
+            + "/recorded.html?countMax=20000&startTime="+awal
+            + "&selectedFields=Items.Timestamp;Items.Value";   //+"&endTime="+akhir;
+//    qDebug() << "url = " << urls;
+    QUrl url =  QUrl::fromEncoded(urls.toLocal8Bit().data());
+//    qDebug() << " 9 -----------------------------";
+
+    request.setUrl(url);
+//*
+    //QObject: Cannot create children for a parent that is in a different thread.
+    //(Parent is QNetworkAccessManager(0x1eab6a0), parent's thread is QThread(0x1e78fe0), current thread is QThread(0x1e9c3d0)
+    manager.get(request);
+
+}
 
 void PiWebApiModel::reqWebApiDataRecordedSingle(stJobQueue job) {
     this->mJob = job;
@@ -99,7 +120,7 @@ void PiWebApiModel::replyFinishedRecorded(QNetworkReply *reply)    {
     emit resultReadyTh(mJob.thId, ba);
 #endif
 //    emit resultReady(mArg);
-    emit finished();
+//    emit finished();
     qDebug()<< "<<<<<< finished Simpan Recorded Data PiWebApiCrawler";
 }
 

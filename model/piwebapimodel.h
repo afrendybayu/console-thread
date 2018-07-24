@@ -41,6 +41,7 @@ private:
     int mPi;
 
     QString getLastDataTime(QString tag);
+    void reqWebApiDataRecordedSingle();
 
 private slots:
     void replyFinishedRecorded(QNetworkReply *reply);

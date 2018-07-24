@@ -9,6 +9,10 @@ SqlDb::SqlDb()  {
 }
 
 
+void SqlDb::openConnDB(QString koneksi)  {
+    openConnectionSqlite(SQLITE_FILE, koneksi);
+}
+
 void SqlDb::openConnDB()  {
     openConnectionSqlite(SQLITE_FILE);
 }
@@ -31,9 +35,33 @@ void SqlDb::simpanLog(QString isi)  {
     closeConnectionSqlite();
 }
 
-bool SqlDb::openConnectionSqlite(const QString& path) {
+bool SqlDb::openConnectionSqlite(const QString& path, QString koneksi) {
 //    sqlite = QSqlDatabase::addDatabase("QSQLITE","qt_sql_default_connection"); // nama koneksi default
-//    sqlite = QSqlDatabase::addDatabase("QSQLITE");  // ,"koneksiSqlite"
+    sqlite = QSqlDatabase::addDatabase("QSQLITE", koneksi);  //
+//    sqlite = QSqlDatabase::addDatabase("QSQLITE");  //
+    sqlite.setDatabaseName(path);
+    bool st = false;
+
+//    if (sqlite.open()) {
+//        qDebug() << "SqlDb open koneksi sqlite";
+//    }
+
+//    sqlite = QSqlDatabase::database("koneksiSqlite");
+    if (!sqlite.open()) {
+        qDebug() << "KOneksi SQLite gagal !!";
+    }
+    else {
+        qDebug() << "Koneksi SQLite berhasil";
+//        logMessage( "koneksi berhasil", 1 );    // QtServiceBase::Error
+        st = true;
+    }
+
+//    qDebug() << "open ?: " << sqlite.open();
+    return st;
+}
+
+bool SqlDb::openConnectionSqlite(const QString& path = SQLITE_FILE) {
+//    sqlite = QSqlDatabase::addDatabase("QSQLITE","qt_sql_default_connection"); // nama koneksi default
     sqlite = QSqlDatabase::addDatabase("QSQLITE");  //
     sqlite.setDatabaseName(path);
     bool st = false;
@@ -42,11 +70,12 @@ bool SqlDb::openConnectionSqlite(const QString& path) {
 //        qDebug() << "SqlDb open koneksi sqlite";
 //    }
 
+//    sqlite = QSqlDatabase::database("koneksiSqlite");
     if (!sqlite.open()) {
         qDebug() << "KOneksi SQLite gagal !!";
     }
     else {
-//        qDebug() << "Koneksi SQLite berhasil";
+        qDebug() << "Koneksi SQLite berhasil";
 //        logMessage( "koneksi berhasil", 1 );    // QtServiceBase::Error
         st = true;
     }
