@@ -59,3 +59,5 @@ HEADERS += \
 #    release/moc_predefs.h \
 
 win32:RC_ICONS          =   resources/favicon.ico
+
+DLLDESTDIR += dlldir

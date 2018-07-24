@@ -71,8 +71,8 @@ void PiWebApiCrawler::reqWebApiDataRecordedSingle(stJobQueue job) {
 
     QNetworkRequest request;
 //    qDebug() << " 9 -----------------------------";   // URL_WEBAPI_DATA_RECORDED
-    QString urls = "http://"+job.host+"/"+job.url+"/"+job.webId
-            + "/recorded.html?countMax="+job.max_daq_request+"&startTime="+awal
+    QString urls = "https://"+job.host+"/"+job.url+"/"+job.webId
+            + "/recorded?countMax="+job.max_daq_request+"&startTime="+awal
             + "&selectedFields=Items.Timestamp;Items.Value";   //+"&endTime="+akhir;
     qDebug() << "url = " << urls;
     QUrl url =  QUrl::fromEncoded(urls.toLocal8Bit().data());
