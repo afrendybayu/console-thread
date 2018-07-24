@@ -379,6 +379,7 @@ void MainControllerO::initData() {
     // QSqlDatabasePrivate::addDatabase: duplicate connection name 'qt_sql_default_connection', old connection removed
     // ------- mulai
     {
+        QString liteKoneksi = "koneksiSqlite";
         SqlDb sqlite;
         sqlite.openConnDB();
 
@@ -386,7 +387,7 @@ void MainControllerO::initData() {
         mActiveTag = new QSqlQueryModel();
         mActiveFormula = new QSqlQueryModel();
 
-        modelServerConfig.initData(mServerConfig);
+        modelServerConfig.initData(mServerConfig, liteKoneksi);
         modelActiveTag.getActiveTag(mActiveTag);
         modelActiveFormula.getActiveFormula(mActiveFormula);
 
@@ -591,6 +592,7 @@ int  MainControllerO::doCrawling(stJobQueue job, int urut)   {
     ppi[k-1].passingParam(job, urut, k, i); // k,i
     ppi[k-1].moveToThread(&pth[k-1]);
 
+    // https://stackoverflow.com/questions/26692649/how-to-detect-qobjectmovetothread-failure-in-qt5
     if(ppi[k-1].thread() != &pth[k-1])  {
         qDebug() << "======================= @@@@@@@@@ moveToThread failed.";
         jobQueue[urut].status = JOB_FREE;

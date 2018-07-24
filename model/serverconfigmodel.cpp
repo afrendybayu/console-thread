@@ -20,7 +20,7 @@ void ServerConfigModel::init()  {
 }
 //*/
 
-int ServerConfigModel::initData(QSqlQueryModel* model)  {
+int ServerConfigModel::initData(QSqlQueryModel* model, QString koneksi)  {
 //    qDebug("masuk initData pointer ServerConfigModel QSqlRelationalTableModel");
     //model = new QSqlRelationalTableModel();
 
@@ -35,7 +35,7 @@ int ServerConfigModel::initData(QSqlQueryModel* model)  {
     }
 //*/
     QString q = QString("select * from option");
-    model->setQuery(q);
+    model->setQuery(q,QSqlDatabase::database(koneksi));
     //int n = model->rowCount();
     //qDebug("Jml row: %d", n);
     return model->rowCount();

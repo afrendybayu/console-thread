@@ -20,6 +20,7 @@ public:
     ~SqlDb();
 
     void openConnDB();
+    void openConnDB(QString koneksi);
     void closeConnDB();
     void simpanLog(QString isi);
 
@@ -28,6 +29,7 @@ private:
     QSqlDatabase mssql;
 
     bool openConnectionSqlite(const QString& path);
+    bool openConnectionSqlite(const QString& path, QString koneksi);
     void closeConnectionSqlite();
 
     void openConnectionMsSql();
