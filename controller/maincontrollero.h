@@ -17,6 +17,8 @@
 
 #include <model/piwebapimodel.h>
 
+#define PAKAI_SINGLE_THREAD
+//#define PAKAI_MULTI_THREAD
 
 class MainControllerO : public QObject
 {
@@ -52,14 +54,13 @@ private:
     int  doCalculating(int id, stJobQueue job);
 
     int  doCrawling(stJobQueue job, int urut);
-
+    void mappingAccountTmms(QSqlQueryModel* data);
     void sedot(stJobQueue job);
 
     QThread* th;
     PiWebApiCrawler* pi;
 
-    QThread* pth;
-    PiWebApiModel* ppi;
+
     bool disabled;
     int threadCount;
     bool ajaxDone;
@@ -82,11 +83,27 @@ private:
     QSqlQueryModel *mActiveTag;
     QSqlQueryModel *mActiveFormula;
 
+#ifdef PAKAI_SINGLE_THREAD
+    int nCurrentJob;
+#endif
+
+#ifdef PAKAI_MULTI_THREAD
+    QThread* pth;
+    PiWebApiModel* ppi;
+
     int jmlThread;
     QList<int> iTh;
     QList<int> pidTh;
     QList<int> iPi;
     QMutex mutex;
+#endif
+
+    QString tmms_ip;
+    QString tmms_account;
+    QString tmms_password;
+    QString tmms_port;
+    QString tmms_url;
+    QString tmms_max_daq_request;
 };
 
 #endif // MAINCONTROLLERO_H

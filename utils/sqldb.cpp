@@ -2,12 +2,12 @@
 #include <QDebug>
 #include <QSqlQuery>
 #include <QDateTime>
-
+#include <QStandardPaths>
 
 SqlDb::SqlDb()  {
-
+    SQLITE_FILE = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)+"/picassa.db";
+    qDebug() << "lokasi sql:"<< SQLITE_FILE;
 }
-
 
 void SqlDb::openConnDB(QString koneksi)  {
     openConnectionSqlite(SQLITE_FILE, koneksi);
@@ -60,7 +60,7 @@ bool SqlDb::openConnectionSqlite(const QString& path, QString koneksi) {
     return st;
 }
 
-bool SqlDb::openConnectionSqlite(const QString& path = SQLITE_FILE) {
+bool SqlDb::openConnectionSqlite(const QString& path) {
 //    sqlite = QSqlDatabase::addDatabase("QSQLITE","qt_sql_default_connection"); // nama koneksi default
     sqlite = QSqlDatabase::addDatabase("QSQLITE");  //
     sqlite.setDatabaseName(path);

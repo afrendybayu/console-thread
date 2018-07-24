@@ -70,9 +70,9 @@ void PiWebApiCrawler::reqWebApiDataRecordedSingle(stJobQueue job) {
 //    qDebug() << "last data: " << last;
 
     QNetworkRequest request;
-//    qDebug() << " 9 -----------------------------";
-    QString urls = URL_WEBAPI_DATA_RECORDED + job.webId
-            + "/recorded.html?countMax=20000&startTime="+awal
+//    qDebug() << " 9 -----------------------------";   // URL_WEBAPI_DATA_RECORDED
+    QString urls = "http://"+job.host+"/"+job.url+"/"+job.webId
+            + "/recorded.html?countMax="+job.max_daq_request+"&startTime="+awal
             + "&selectedFields=Items.Timestamp;Items.Value";   //+"&endTime="+akhir;
     qDebug() << "url = " << urls;
     QUrl url =  QUrl::fromEncoded(urls.toLocal8Bit().data());

@@ -38,6 +38,12 @@ struct stJobQueue   {
     QString webId;
     QString kode;
     int thId;
+    QString account;
+    QString password;
+    QString host;
+    QString port;
+    QString url;
+    QString max_daq_request;
 };
 
 struct stRecordedDataPiWebAPi    {

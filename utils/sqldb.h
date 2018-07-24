@@ -8,7 +8,8 @@
 #define SQLITE_FILE "picassa.db"
 #else   // Q_OS_WINDOWS
 //#define SQLITE_FILE "C:/Users/afrendy/Documents/koding/exe/picassa.db"
-#define SQLITE_FILE "C:/Program Files (x86)/dbe/exe/picassa.db"
+//#define SQLITE_FILE "C:/Program Files (x86)/dbe/exe/picassa.db"
+//#define SQLITE_FILE     QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
 #endif
 
 //#define SQLITE_FILE "./picassa.db"
@@ -27,6 +28,8 @@ public:
 private:
     QSqlDatabase sqlite;
     QSqlDatabase mssql;
+
+    QString SQLITE_FILE;
 
     bool openConnectionSqlite(const QString& path);
     bool openConnectionSqlite(const QString& path, QString koneksi);
