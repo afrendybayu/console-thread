@@ -63,6 +63,9 @@ private:
 };
 
 int main(int argc, char *argv[])    {
+    QCoreApplication::setOrganizationName("DaunBiru");
+    QCoreApplication::setOrganizationDomain("daunbiru.com");
+    QCoreApplication::setApplicationName("daqscadamits");
 
     qDebug()<<"From main thread: "<<QThread::currentThreadId();
 

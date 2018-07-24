@@ -7,7 +7,7 @@ CONFIG += c++11 console
 CONFIG -= app_bundle
 
 #TARGET = app
-win32: TARGET = ../../../koding/exe/DAQScadaMITs
+win32: TARGET = ../../../koding/exe/DAQScadaMITs.exe
 unix:  TARGET = DAQScadaMITs
 
 DEFINES += CONSOLE
