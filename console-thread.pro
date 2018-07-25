@@ -60,12 +60,9 @@ HEADERS += \
 
 win32:RC_ICONS          =   resources/favicon.ico
 
-DLLDESTDIR += dlldir
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/libs/ -llibeay32 -llibssl32
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/libs/ -llibeay32d -llibssl32d
-else:unix: LIBS += -L$$PWD/libs/ -llibeay32 -llibssl32
+win32: LIBS += -L$$PWD/../../../../../OpenSSL-Win32/lib/MinGW/ -lssl-1_1
 
-INCLUDEPATH += $$PWD/libs
-DEPENDPATH += $$PWD/libs
+INCLUDEPATH += $$PWD/../../../../../OpenSSL-Win32/lib/MinGW
+DEPENDPATH += $$PWD/../../../../../OpenSSL-Win32/lib/MinGW
 
