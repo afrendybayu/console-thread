@@ -93,7 +93,8 @@ MainControllerO::MainControllerO(QObject *parent) : QObject(parent)
 
     disabled = false;
 
-    qDebug() << "masuk thread MainControllerO : "<< QThread::currentThreadId();
+    qDebug() << "masuk thread MainControllerO : "<< QThread::currentThreadId()
+             << __DATE__ << __TIME__;
     init();
 
 

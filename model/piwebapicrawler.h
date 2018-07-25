@@ -52,8 +52,15 @@ private:
     QNetworkRequest xrequest;
     QString mArg;
 
+
 private slots:
     void replyFinishedRecorded(QNetworkReply *reply);
+    void authenticationRequired(QNetworkReply *reply, QAuthenticator *authenticator);
+//    void PiWebApiCrawler::authenticationRequired(QNetworkReply *reply, QAuthenticator *authenticator);
+
+#ifndef QT_NO_SSL
+    void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
+#endif
 
 };
 

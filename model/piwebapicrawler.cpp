@@ -10,20 +10,7 @@
 #include "piwebapicrawler.h"
 #include <utils/sqldb.h>
 
-#define MULTI_THREAD
-
-//PiWebApiCrawler::PiWebApiCrawler(QObject *parent) : QObject(parent)
-//{
-////    connect(&manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinishedRecorded(QNetworkReply *)));
-//}
-
-/*
-PiWebApiCrawler::PiWebApiCrawler(QObject *parent, QString arg) : QObject(parent)
-{
-//    connect(&manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinishedRecorded(QNetworkReply *)));
-    mArg = arg;
-}
-//*/
+//#define MULTI_THREAD
 
 PiWebApiCrawler::PiWebApiCrawler(QString arg) : QObject()
 {
@@ -31,8 +18,18 @@ PiWebApiCrawler::PiWebApiCrawler(QString arg) : QObject()
 //    prequest = new QNetworkRequest;
 
 //    connect(pmanager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinishedRecorded(QNetworkReply*)));
-    connect(&manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinishedRecorded(QNetworkReply *)));
+//    connect(&manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinishedRecorded(QNetworkReply *)));
+//    connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+
+    connect(pmanager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinishedRecorded(QNetworkReply *)));
+    connect(pmanager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+
+
     mArg = arg;
+
+#ifndef QT_NO_SSL
+    connect(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), this, SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
+#endif
 
 }
 
@@ -47,6 +44,20 @@ PiWebApiCrawler::~PiWebApiCrawler() {
 //    prequest = NULL;
 //    delete prequest;
 }
+
+void PiWebApiCrawler::authenticationRequired(QNetworkReply *reply, QAuthenticator *authenticator)   {
+    qDebug() << "Authentication";
+    authenticator->setUser(mJob.account);
+    authenticator->setPassword(mJob.password);
+}
+
+#ifndef QT_NO_SSL
+void PiWebApiCrawler::sslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
+{
+    qDebug() << "SSL Error";
+    reply->ignoreSslErrors();
+}
+#endif
 
 void PiWebApiCrawler::run(QString urls) {
     qDebug() << "run Thread piweb craler " << QThread::currentThreadId() << ":" << mArg;
@@ -79,12 +90,12 @@ void PiWebApiCrawler::reqWebApiDataRecordedSingle(stJobQueue job) {
 //    qDebug() << " 9 -----------------------------";
 
     request.setUrl(url);
-//*
-//    qDebug() << "sampe sini";
-//    qDebug() << " 8 -----------------------------";
+
     //QObject: Cannot create children for a parent that is in a different thread.
     //(Parent is QNetworkAccessManager(0x1eab6a0), parent's thread is QThread(0x1e78fe0), current thread is QThread(0x1e9c3d0)
-    manager.get(request);
+//    manager.get(request);
+
+    pmanager->get(request);
 
 
 //    qDebug() << " 1 -----------------------------";
@@ -134,7 +145,7 @@ void PiWebApiCrawler::replyFinishedRecorded(QNetworkReply *reply)    {
     QByteArray ba = reply->readAll();
     reply->deleteLater();
 
-//    qDebug() << ba;
+    qDebug() << "isi reply:"<< ba;
 
     // kalau penyimpanan langsung dari model. *Tapi belum dapat id titik ukur
 //    int last;
